@@ -28,11 +28,8 @@ export default {
     web: {
       favicon: "./assets/favicon.png",
       bundler: "metro",
-      output: "static"
+      output: "single"
     },
-    plugins: [
-      "expo-router"
-    ],
     extra: {
       eas: {
         projectId: "your-project-id-from-eas"
