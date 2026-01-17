@@ -61,8 +61,23 @@
 - [ ] No `.env` file exists
 - [ ] Environment variables not configured
 
-### Phase 2-6: Development
-- [ ] No components built (except web fallback)
+### Phase 2: Core UI Components (In Progress)
+- [x] **Task 5:** ActivityButton component
+  - [x] Created `src/components/ActivityButton.tsx`
+  - [x] Created `src/components/__tests__/ActivityButton.test.tsx`
+  - [x] All tests passing
+
+- [x] **Task 6:** QuickOptionsSheet component (native version)
+  - [x] Created `src/components/QuickOptionsSheet.tsx`
+  - [x] Created `src/components/__tests__/QuickOptionsSheet.test.tsx`
+  - [x] All tests passing
+  - [x] Uses @gorhom/bottom-sheet for native platforms
+  - [x] Web version already exists (QuickOptionsSheet.web.tsx)
+
+- [ ] **Task 7:** LastActivityCard and TimelineItem components
+  - [ ] Not started
+
+### Phase 3-6: Development
 - [ ] No screens created
 - [ ] No stores implemented
 - [ ] No Supabase integration
@@ -91,23 +106,23 @@
 - Initialize Supabase client with environment variables
 - Configure AsyncStorage for session persistence
 
-**3. Begin Phase 2: Core UI Components**
-- Task 5: Create ActivityButton component
-- Task 6: Create QuickOptionsSheet component (native version)
+**3. Continue Phase 2: Core UI Components**
+- ~~Task 5: Create ActivityButton component~~ ✅ Done
+- ~~Task 6: Create QuickOptionsSheet component (native version)~~ ✅ Done
 - Task 7: Create LastActivityCard and TimelineItem components
 
 ---
 
 ## 📊 Progress Tracker
 
-### Overall Progress: 25%
+### Overall Progress: 35%
 
 | Phase | Status | Progress |
 |-------|--------|----------|
 | Pre-Setup (Deployment Configs) | ✅ Complete | 100% |
 | Phase 1: Project Setup | ✅ Complete | 100% |
 | Supabase Setup | ❌ Not Started | 0% |
-| Phase 2: Core UI | ❌ Not Started | 0% |
+| Phase 2: Core UI | 🔄 In Progress | 67% (2/3 tasks) |
 | Phase 3: Home Screen | ❌ Not Started | 0% |
 | Phase 4: Timeline | ❌ Not Started | 0% |
 | Phase 5: Stats | ❌ Not Started | 0% |
@@ -170,11 +185,25 @@ Session 2 (2026-01-17):
 - Fixed QuickOptionsSheet.web.tsx color reference
 - TypeScript compilation verified successfully
 
+Session 3 (2026-01-17):
+- Completed Task 5: ActivityButton component
+  - Created component with full test coverage
+  - All activity types supported with proper colors
+  - Accessibility labels and hints implemented
+- Completed Task 6: QuickOptionsSheet component
+  - Created native version using @gorhom/bottom-sheet
+  - Comprehensive test suite with 17 tests (all passing)
+  - Proper integration with BottomSheetBackdrop
+  - Activity-specific options mapping for all 5 activity types
+  - Large tap targets (56px minimum height) for accessibility
+  - Web version already exists separately
+
+Phase 2 Core UI progress: 67% complete (2/3 tasks)
+
 Next session should:
-- Set up Supabase project and database
-- Create .env file with Supabase credentials
-- Create src/lib/supabase.ts client
-- Begin Phase 2: Core UI Components
+- Complete Task 7: LastActivityCard and TimelineItem components
+- Then move to Phase 3: HomeScreen implementation
+- Or optionally: Set up Supabase project in parallel
 ```
 
 ---
