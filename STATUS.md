@@ -1,7 +1,7 @@
 # Project Status
 
-**Last Updated:** 2026-01-16
-**Current Phase:** Pre-Development (Deployment Config Only)
+**Last Updated:** 2026-01-17
+**Current Phase:** Phase 1 - Project Setup (In Progress)
 
 ---
 
@@ -22,31 +22,38 @@
 - [x] `SETUP-CHECKLIST.md` - Step-by-step setup tracking
 - [x] `STATUS.md` - This file
 
+### Phase 1: Project Setup (Complete)
+- [x] **Task 1:** Initialize Expo project
+  - [x] Created `package.json`
+  - [x] Created `node_modules/` directory
+  - [x] Expo project initialized with TypeScript template
+
+- [x] **Task 2:** Install core dependencies
+  - [x] React Navigation
+  - [x] Supabase client
+  - [x] Zustand & AsyncStorage
+  - [x] Bottom Sheet & Reanimated
+  - [x] date-fns utility
+
+- [x] **Task 3:** Configure Babel and TypeScript
+  - [x] `babel.config.js` configured with module resolver
+  - [x] `tsconfig.json` configured with path aliases (@/*)
+  - [x] Path aliases working for imports
+
+- [x] **Task 4:** Create project structure
+  - [x] Created `src/components/` directory
+  - [x] Created `src/screens/` directory
+  - [x] Created `src/hooks/` directory
+  - [x] Created `src/stores/` directory
+  - [x] Created `src/types/` directory
+  - [x] Created `src/lib/` directory
+  - [x] Created `src/constants/` directory
+  - [x] Created `src/types/index.ts` with all type definitions
+  - [x] Created `src/constants/colors.ts` with activity colors
+
 ---
 
 ## ❌ Not Started
-
-### Phase 1: Project Setup
-- [ ] **Task 1:** Initialize Expo project
-  - [ ] No `package.json` exists
-  - [ ] No `node_modules/` directory
-  - [ ] Expo project not created
-
-- [ ] **Task 2:** Install core dependencies
-  - [ ] React Navigation
-  - [ ] Supabase client
-  - [ ] Zustand & AsyncStorage
-  - [ ] Bottom Sheet & Reanimated
-
-- [ ] **Task 3:** Configure Babel and TypeScript
-  - [ ] No `babel.config.js` exists
-  - [ ] No `tsconfig.json` exists
-
-- [ ] **Task 4:** Create project structure
-  - [ ] No `src/` directories created
-  - [ ] No type definitions
-  - [ ] No constants/colors
-  - [ ] No Supabase client
 
 ### Supabase Setup
 - [ ] Supabase project not created
@@ -71,44 +78,34 @@
 
 ### Immediate (Start Here)
 
-**1. Initialize Expo Project**
-```bash
-npx create-expo-app@latest peekaboo --template expo-template-blank-typescript
-```
-⚠️ **IMPORTANT:** This will create files in the current directory. The deployment config files already exist and may need to be merged.
-
-**Alternative (Safer):**
-```bash
-# Create in a temp directory first
-cd ..
-npx create-expo-app@latest peekaboo-temp --template expo-template-blank-typescript
-# Then manually merge the generated files with existing deployment configs
-```
-
-**2. Set up Supabase**
+**1. Set up Supabase** (Recommended Next Step)
 - Create project at https://supabase.com
-- Run database schema SQL
-- Create `.env` file with credentials
+- Run database schema SQL (from specs/database-schema.sql if exists)
+- Create `.env` file with credentials:
+  ```
+  EXPO_PUBLIC_SUPABASE_URL=your_project_url
+  EXPO_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+  ```
 
-**3. Install Dependencies**
-```bash
-# After Expo project is initialized
-npx expo install @react-navigation/native @react-navigation/bottom-tabs
-npx expo install @supabase/supabase-js react-native-url-polyfill
-npx expo install zustand @react-native-async-storage/async-storage date-fns
-npx expo install @gorhom/bottom-sheet react-native-reanimated react-native-gesture-handler
-```
+**2. Create Supabase Client** (`src/lib/supabase.ts`)
+- Initialize Supabase client with environment variables
+- Configure AsyncStorage for session persistence
+
+**3. Begin Phase 2: Core UI Components**
+- Task 5: Create ActivityButton component
+- Task 6: Create QuickOptionsSheet component (native version)
+- Task 7: Create LastActivityCard and TimelineItem components
 
 ---
 
 ## 📊 Progress Tracker
 
-### Overall Progress: 5%
+### Overall Progress: 25%
 
 | Phase | Status | Progress |
 |-------|--------|----------|
 | Pre-Setup (Deployment Configs) | ✅ Complete | 100% |
-| Phase 1: Project Setup | ❌ Not Started | 0% |
+| Phase 1: Project Setup | ✅ Complete | 100% |
 | Supabase Setup | ❌ Not Started | 0% |
 | Phase 2: Core UI | ❌ Not Started | 0% |
 | Phase 3: Home Screen | ❌ Not Started | 0% |
@@ -162,10 +159,22 @@ Session 1 (2026-01-16):
 - Created comprehensive documentation
 - Ready to initialize Expo project
 
+Session 2 (2026-01-17):
+- Completed Phase 1: Project Setup (100%)
+- Updated tsconfig.json with path aliases (@/*)
+- Installed babel-plugin-module-resolver
+- Configured babel.config.js for path alias support
+- Created complete src/ directory structure
+- Created src/types/index.ts with all type definitions
+- Created src/constants/colors.ts with activity colors
+- Fixed QuickOptionsSheet.web.tsx color reference
+- TypeScript compilation verified successfully
+
 Next session should:
-- Initialize Expo project
-- Set up Supabase
-- Begin Phase 1 implementation
+- Set up Supabase project and database
+- Create .env file with Supabase credentials
+- Create src/lib/supabase.ts client
+- Begin Phase 2: Core UI Components
 ```
 
 ---
