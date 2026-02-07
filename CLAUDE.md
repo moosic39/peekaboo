@@ -245,6 +245,24 @@ Session 3 (2026-01-17):
 Next: Start Phase 3 - Implement HomeScreen
 ```
 
+### Git Workflow
+**IMPORTANT: Always commit with the correct GitHub identity:**
+
+```bash
+# Global git identity (applies to all repositories)
+git config --global user.name "moosic39"
+git config --global user.email "moosic39@gmail.com"
+```
+
+**When creating commits:**
+- Always ensure commits are attributed to **moosic39 <moosic39@gmail.com>**
+- Use descriptive commit messages that explain the "why" not just the "what"
+- Follow conventional commit format when appropriate (feat:, fix:, docs:, etc.)
+- Include co-author attribution for AI assistance:
+  ```
+  Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
+  ```
+
 ### Test-Driven Development
 Follow TDD pattern for new components:
 1. Write failing test first
