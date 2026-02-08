@@ -28,14 +28,37 @@ EXCEPTION
   WHEN OTHERS THEN NULL;
 END $$;
 
--- Drop triggers first
-DROP TRIGGER IF EXISTS sync_growth_to_measurements ON activities;
-DROP TRIGGER IF EXISTS update_growth_measurements_updated_at ON growth_measurements;
-DROP TRIGGER IF EXISTS update_activities_updated_at ON activities;
-DROP TRIGGER IF EXISTS update_babies_updated_at ON babies;
-DROP TRIGGER IF EXISTS update_families_updated_at ON families;
-DROP TRIGGER IF EXISTS add_family_creator ON families;
-DROP TRIGGER IF EXISTS set_family_invite_code ON families;
+-- Drop triggers first (ignore errors if table doesn't exist)
+DO $$
+BEGIN
+  DROP TRIGGER IF EXISTS sync_growth_to_measurements ON activities;
+  DROP TRIGGER IF EXISTS update_activities_updated_at ON activities;
+EXCEPTION
+  WHEN undefined_table THEN NULL;
+END $$;
+
+DO $$
+BEGIN
+  DROP TRIGGER IF EXISTS update_growth_measurements_updated_at ON growth_measurements;
+EXCEPTION
+  WHEN undefined_table THEN NULL;
+END $$;
+
+DO $$
+BEGIN
+  DROP TRIGGER IF EXISTS update_babies_updated_at ON babies;
+EXCEPTION
+  WHEN undefined_table THEN NULL;
+END $$;
+
+DO $$
+BEGIN
+  DROP TRIGGER IF EXISTS update_families_updated_at ON families;
+  DROP TRIGGER IF EXISTS add_family_creator ON families;
+  DROP TRIGGER IF EXISTS set_family_invite_code ON families;
+EXCEPTION
+  WHEN undefined_table THEN NULL;
+END $$;
 
 -- Drop views (dependent on tables)
 DROP VIEW IF EXISTS sleep_stats;
