@@ -13,9 +13,20 @@
 -- STEP 1: DROP EXISTING OBJECTS (in correct dependency order)
 -- ====================================================================
 
--- Drop realtime publications
-ALTER PUBLICATION supabase_realtime DROP TABLE IF EXISTS activities;
-ALTER PUBLICATION supabase_realtime DROP TABLE IF EXISTS growth_measurements;
+-- Drop realtime publications (ignore errors if tables not in publication)
+DO $$
+BEGIN
+  ALTER PUBLICATION supabase_realtime DROP TABLE activities;
+EXCEPTION
+  WHEN OTHERS THEN NULL;
+END $$;
+
+DO $$
+BEGIN
+  ALTER PUBLICATION supabase_realtime DROP TABLE growth_measurements;
+EXCEPTION
+  WHEN OTHERS THEN NULL;
+END $$;
 
 -- Drop triggers first
 DROP TRIGGER IF EXISTS sync_growth_to_measurements ON activities;
