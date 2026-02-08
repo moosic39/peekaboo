@@ -31,7 +31,8 @@ export const useActivityStore = create<ActivityStore>()(
     (set, get) => ({
       // Initial state
       activities: [],
-      currentBabyId: 'default',
+      // DEVELOPMENT: Using test baby ID - update once auth is implemented
+      currentBabyId: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
 
       /**
        * Log a new activity
