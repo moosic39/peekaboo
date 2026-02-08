@@ -1,7 +1,7 @@
 # Project Status
 
 **Last Updated:** 2026-02-08
-**Current Phase:** Phase 3 - Home Screen (Complete)
+**Current Phase:** Phase 4 - Timeline, Stats & Navigation (Complete)
 
 ---
 
@@ -166,12 +166,43 @@
   - [x] All 11 HomeScreen tests passing
   - [x] Total: 93 tests passing (66 components + 16 store + 11 screen)
 
+### Phase 4: Timeline, Stats & Navigation (Complete)
+- [x] **Task 10:** TimelineScreen Implementation
+  - [x] Created `src/screens/TimelineScreen.tsx`
+  - [x] Created `src/screens/__tests__/TimelineScreen.test.tsx`
+  - [x] SectionList for chronological activity history
+  - [x] Date grouping with "Today", "Yesterday", and formatted dates
+  - [x] Activities sorted newest first within sections
+  - [x] Empty state for when no activities exist
+  - [x] Long-press deletion via deleteActivity from store
+  - [x] All 10 TimelineScreen tests passing
+
+- [x] **Task 11:** StatsScreen Implementation
+  - [x] Created `src/screens/StatsScreen.tsx`
+  - [x] Created `src/screens/__tests__/StatsScreen.test.tsx`
+  - [x] Today and This Week sections with activity counts
+  - [x] Sleep duration calculation and formatting (e.g., "2h 30m")
+  - [x] 2x2 grid layout with colored stat cards
+  - [x] All 4 activity types displayed (feed, diaper, sleep, pump)
+  - [x] Handles missing sleep duration gracefully
+  - [x] All 10 StatsScreen tests passing
+
+- [x] **Task 12:** Navigation Setup
+  - [x] Updated `App.tsx` with NavigationContainer
+  - [x] Bottom tab navigator with 3 tabs
+  - [x] TabIcon component with emoji icons (🏠, 📋, 📊)
+  - [x] Opacity states for active/inactive tabs
+  - [x] Proper tab bar styling with colors and spacing
+  - [x] All screens connected with seamless navigation
+  - [x] Total: 113 tests passing (93 previous + 10 Timeline + 10 Stats)
+
 ## ❌ Not Started
 
-### Phase 4-6: Development
-- [ ] TimelineScreen not implemented
-- [ ] StatsScreen not implemented
-- [ ] Navigation not implemented
+### Phase 5-6: Authentication & Multi-User
+- [ ] Sign up/sign in screens not implemented
+- [ ] Family creation and join screens not implemented
+- [ ] Multiple babies support not implemented
+- [ ] Settings screen not implemented
 
 ### Deployment
 - [ ] Web deployment not configured with Vercel
@@ -184,38 +215,44 @@
 
 ### Immediate (Start Here)
 
-✅ **Phase 3 Complete!** Activity logging is now fully functional with offline-first persistence and real-time sync.
+✅ **Phase 4 Complete!** The app now has fully functional navigation with Timeline, Stats, and Home screens.
 
-**Phase 4: Timeline & Navigation**
+**Current Status:**
+- ✅ Activity logging with offline-first storage
+- ✅ Real-time sync with Supabase
+- ✅ Chronological timeline with date grouping
+- ✅ Daily and weekly statistics
+- ✅ Bottom tab navigation
+- ✅ 113 tests passing
 
-With the home screen working, add navigation and activity history:
+**What Works:**
+- Log activities on Home screen
+- View history on Timeline screen
+- See stats on Stats screen
+- Navigate between screens with tabs
+- Long-press to delete activities
+- Sleep duration tracking
 
-1. **Task 10: Create TimelineScreen** (`src/screens/TimelineScreen.tsx`)
-   - Display chronological activity history
-   - Group activities by date
-   - Use TimelineItem component for each activity
-   - Add pull-to-refresh functionality
-   - Connect to activity store
+**Next Phase Options:**
 
-2. **Task 11: Create StatsScreen** (`src/screens/StatsScreen.tsx`)
-   - Display daily and weekly statistics
-   - Count activities by type
-   - Show trends and patterns
-   - Use simple counters for MVP
+**Option 1: Deploy to Production**
+Deploy the working app to web and mobile:
+1. Deploy to Vercel (web) - configs already exist
+2. Deploy to EAS Build (mobile) - configs already exist
+3. Share with users for testing
 
-3. **Task 12: Add Navigation**
-   - Set up React Navigation bottom tabs
-   - Three tabs: Home (🏠), Timeline (📋), Stats (📊)
-   - Configure tab bar styling
-   - Test navigation between screens
-
-**Why this order:** Timeline shows logged activities, Stats displays analytics, and navigation ties everything together.
+**Option 2: Continue Development (Phase 5)**
+Add authentication and multi-user features:
+1. Sign up/sign in screens
+2. Family creation and join
+3. Multiple babies support
+4. Settings screen
 
 ---
 
 ## 📊 Progress Tracker
 
-### Overall Progress: 75%
+### Overall Progress: 90%
 
 | Phase | Status | Progress |
 |-------|--------|----------|
@@ -225,9 +262,9 @@ With the home screen working, add navigation and activity history:
 | Supabase Deployment | ✅ Complete | 100% (V2 deployed & tested) |
 | Phase 2: Core UI | ✅ Complete | 100% (3/3 tasks) |
 | Phase 3: Home Screen | ✅ Complete | 100% (2/2 tasks) |
-| Phase 4: Timeline & Navigation | ❌ Not Started | 0% (3/3 tasks) |
-| Phase 5: Stats | ❌ Not Started | 0% |
-| Phase 6: Supabase Integration | ✅ Ready | 100% (backend deployed, sync code ready) |
+| Phase 4: Timeline, Stats & Navigation | ✅ Complete | 100% (3/3 tasks) |
+| Phase 5: Authentication | ❌ Not Started | 0% |
+| Phase 6: Multi-User Features | ❌ Not Started | 0% |
 | Web Deployment | ⚠️ Config Ready | 50% |
 | Mobile Deployment | ⚠️ Config Ready | 50% |
 
@@ -439,6 +476,54 @@ Next recommended steps:
 - Phase 4: TimelineScreen to view activity history
 - Phase 4: StatsScreen to display analytics
 - Phase 4: React Navigation for bottom tabs (Home | Timeline | Stats)
+
+Session 8 (2026-02-08):
+- Completed Phase 4: Timeline, Stats & Navigation (100%)
+- Completed Task 10: TimelineScreen Implementation
+  * Created chronological activity history with SectionList
+  * Date grouping with "Today", "Yesterday", and formatted dates
+  * Activities sorted newest first within each section
+  * Empty state for when no activities exist
+  * Long-press deletion via deleteActivity from store
+  * SafeAreaView from react-native-safe-area-context (no deprecation warning)
+  * All 10 TimelineScreen tests passing (TDD approach)
+- Completed Task 11: StatsScreen Implementation
+  * Created Today and This Week sections
+  * Activity counts for feed, diaper, sleep, pump
+  * Sleep duration calculation and formatting (e.g., "2h 30m", "45m", "2h")
+  * 2x2 grid layout with colored stat cards
+  * Handles missing sleep duration gracefully
+  * All 10 StatsScreen tests passing (TDD approach)
+- Completed Task 12: Navigation Setup
+  * Updated App.tsx with NavigationContainer and bottom tabs
+  * TabIcon component with emoji icons (🏠, 📋, 📊)
+  * Opacity states for active/inactive tabs (1.0 vs 0.5)
+  * Proper tab bar styling with 60px height and spacing
+  * All screens connected with seamless navigation
+  * No TypeScript errors or test regressions
+- Total test suite: 113 tests passing (93 previous + 10 Timeline + 10 Stats)
+
+Key achievements:
+- Full navigation: Users can navigate between Home, Timeline, and Stats
+- Activity history: Chronological view with smart date grouping
+- Statistics: Daily and weekly insights with sleep duration tracking
+- Test-driven development: All features implemented with tests first
+- Production-ready: Comprehensive test coverage, proper error handling
+
+Project now 90% complete! The app is fully functional for single-user activity tracking.
+
+What works:
+- ✅ Log activities on Home screen (offline-first)
+- ✅ View history on Timeline screen (grouped by date)
+- ✅ See stats on Stats screen (today + this week)
+- ✅ Navigate between screens (bottom tabs)
+- ✅ Delete activities (long-press on timeline)
+- ✅ Background sync to Supabase
+- ✅ 113 tests passing
+
+Next options:
+- Option 1: Deploy to production (Vercel for web, EAS for mobile)
+- Option 2: Add authentication and multi-user features (Phase 5)
 ```
 
 ---
