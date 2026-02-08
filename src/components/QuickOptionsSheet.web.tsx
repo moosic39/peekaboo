@@ -20,8 +20,8 @@ const OPTIONS: Record<ActivityType, Option[]> = {
     { label: 'Both', value: 'both' },
   ],
   sleep: [
-    { label: 'Start Sleep', value: 'started' },
-    { label: 'End Sleep', value: 'ended' },
+    { label: 'Start', value: 'start' },
+    { label: 'End', value: 'end' },
   ],
   pump: [
     { label: 'Left', value: 'left' },
@@ -31,14 +31,14 @@ const OPTIONS: Record<ActivityType, Option[]> = {
   growth: [
     { label: 'Weight', value: 'weight' },
     { label: 'Height', value: 'height' },
-    { label: 'All Measurements', value: 'all' },
+    { label: 'Both', value: 'both' },
   ],
 };
 
 interface QuickOptionsSheetProps {
-  type: ActivityType;
+  activityType: ActivityType | null;
   visible: boolean;
-  onSelect: (value: string) => void;
+  onSelectOption: (value: string) => void;
   onClose: () => void;
 }
 
@@ -47,12 +47,16 @@ interface QuickOptionsSheetProps {
  * Falls back to a simple modal dialog for web browsers
  */
 export function QuickOptionsSheet({
-  type,
+  activityType,
   visible,
-  onSelect,
+  onSelectOption,
   onClose,
 }: QuickOptionsSheetProps) {
-  const options = OPTIONS[type];
+  if (!activityType) {
+    return null;
+  }
+
+  const options = OPTIONS[activityType];
 
   return (
     <Modal
@@ -69,14 +73,14 @@ export function QuickOptionsSheet({
         <View style={styles.container}>
           <View style={styles.sheet}>
             <Text style={styles.title}>
-              {type.charAt(0).toUpperCase() + type.slice(1)}
+              {activityType.charAt(0).toUpperCase() + activityType.slice(1)}
             </Text>
             <View style={styles.optionsRow}>
               {options.map((option) => (
                 <TouchableOpacity
                   key={option.value}
-                  style={[styles.option, { backgroundColor: colors[type] }]}
-                  onPress={() => onSelect(option.value)}
+                  style={[styles.option, { backgroundColor: colors[activityType] }]}
+                  onPress={() => onSelectOption(option.value)}
                 >
                   <Text style={styles.optionText}>{option.label}</Text>
                 </TouchableOpacity>
