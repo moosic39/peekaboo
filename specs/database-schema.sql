@@ -137,14 +137,10 @@ CREATE POLICY "Family admins can delete families"
 -- ============================================
 
 -- Users can view members of families they belong to
+-- Fixed: Uses SECURITY DEFINER function to prevent infinite recursion
 CREATE POLICY "Users can view family members"
   ON family_members FOR SELECT
-  USING (
-    family_id IN (
-      SELECT family_id FROM family_members
-      WHERE user_id = auth.uid()
-    )
-  );
+  USING (user_is_in_family(family_id));
 
 -- Users can add themselves to families (via invite code)
 CREATE POLICY "Users can add themselves to families"
@@ -152,14 +148,10 @@ CREATE POLICY "Users can add themselves to families"
   WITH CHECK (user_id = auth.uid());
 
 -- Family admins can remove members
+-- Fixed: Uses SECURITY DEFINER function to prevent infinite recursion
 CREATE POLICY "Family admins can remove members"
   ON family_members FOR DELETE
-  USING (
-    family_id IN (
-      SELECT family_id FROM family_members
-      WHERE user_id = auth.uid() AND role = 'admin'
-    )
-  );
+  USING (user_is_family_admin(family_id));
 
 -- ============================================
 -- BABIES POLICIES
@@ -253,6 +245,35 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
+-- Helper function to check if user is in a family (bypasses RLS to prevent recursion)
+CREATE OR REPLACE FUNCTION user_is_in_family(check_family_id UUID)
+RETURNS BOOLEAN
+LANGUAGE sql
+SECURITY DEFINER -- Bypasses RLS to prevent infinite recursion in family_members policies
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM family_members
+    WHERE user_id = auth.uid()
+    AND family_id = check_family_id
+  );
+$$;
+
+-- Helper function to check if user is admin of a family (bypasses RLS to prevent recursion)
+CREATE OR REPLACE FUNCTION user_is_family_admin(check_family_id UUID)
+RETURNS BOOLEAN
+LANGUAGE sql
+SECURITY DEFINER -- Bypasses RLS to prevent infinite recursion in family_members policies
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM family_members
+    WHERE user_id = auth.uid()
+    AND family_id = check_family_id
+    AND role = 'admin'
+  );
+$$;
 
 -- Apply updated_at trigger to tables
 CREATE TRIGGER update_families_updated_at

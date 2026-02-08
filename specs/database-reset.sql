@@ -1,6 +1,88 @@
 -- ====================================================================
--- Peekaboo Database Schema V2
--- Enhanced for event tracking, visualizations, and growth monitoring
+-- DATABASE RESET SCRIPT
+-- Drops all existing Peekaboo tables, policies, functions, and triggers
+-- Then sets up the database using the V2 schema
+-- ====================================================================
+-- WARNING: This will delete ALL data in your Peekaboo database!
+-- ====================================================================
+
+-- Disable real-time publications first
+DO $$
+BEGIN
+  -- Wrap in error handling block in case publication doesn't exist yet
+  BEGIN
+    ALTER PUBLICATION supabase_realtime DROP TABLE IF EXISTS activities;
+  EXCEPTION
+    WHEN undefined_object THEN NULL;
+    WHEN undefined_table THEN NULL;
+  END;
+
+  BEGIN
+    ALTER PUBLICATION supabase_realtime DROP TABLE IF EXISTS growth_measurements;
+  EXCEPTION
+    WHEN undefined_object THEN NULL;
+    WHEN undefined_table THEN NULL;
+  END;
+END $$;
+
+-- ====================================================================
+-- DROP VIEWS (must be done before tables)
+-- ====================================================================
+
+DROP VIEW IF EXISTS daily_activity_summary CASCADE;
+DROP VIEW IF EXISTS growth_trends CASCADE;
+DROP VIEW IF EXISTS feeding_stats CASCADE;
+DROP VIEW IF EXISTS sleep_stats CASCADE;
+
+-- ====================================================================
+-- DROP TRIGGERS (before functions)
+-- ====================================================================
+
+DO $$
+BEGIN
+  -- Wrap each DROP TRIGGER in an error-handling block
+  BEGIN DROP TRIGGER IF EXISTS update_families_updated_at ON families; EXCEPTION WHEN undefined_object THEN NULL; WHEN undefined_table THEN NULL; END;
+  BEGIN DROP TRIGGER IF EXISTS update_babies_updated_at ON babies; EXCEPTION WHEN undefined_object THEN NULL; WHEN undefined_table THEN NULL; END;
+  BEGIN DROP TRIGGER IF EXISTS update_activities_updated_at ON activities; EXCEPTION WHEN undefined_object THEN NULL; WHEN undefined_table THEN NULL; END;
+  BEGIN DROP TRIGGER IF EXISTS update_growth_measurements_updated_at ON growth_measurements; EXCEPTION WHEN undefined_object THEN NULL; WHEN undefined_table THEN NULL; END;
+  BEGIN DROP TRIGGER IF EXISTS set_family_invite_code ON families; EXCEPTION WHEN undefined_object THEN NULL; WHEN undefined_table THEN NULL; END;
+  BEGIN DROP TRIGGER IF EXISTS add_creator_as_admin ON families; EXCEPTION WHEN undefined_object THEN NULL; WHEN undefined_table THEN NULL; END;
+  BEGIN DROP TRIGGER IF EXISTS sync_growth_to_measurements ON activities; EXCEPTION WHEN undefined_object THEN NULL; WHEN undefined_table THEN NULL; END;
+END $$;
+
+-- ====================================================================
+-- DROP FUNCTIONS
+-- ====================================================================
+
+DROP FUNCTION IF EXISTS update_updated_at_column() CASCADE;
+DROP FUNCTION IF EXISTS user_is_in_family(UUID) CASCADE;
+DROP FUNCTION IF EXISTS user_is_family_admin(UUID) CASCADE;
+DROP FUNCTION IF EXISTS generate_invite_code() CASCADE;
+DROP FUNCTION IF EXISTS set_invite_code() CASCADE;
+DROP FUNCTION IF EXISTS add_family_creator_as_admin() CASCADE;
+DROP FUNCTION IF EXISTS baby_age_in_days(UUID) CASCADE;
+DROP FUNCTION IF EXISTS latest_growth_measurement(UUID) CASCADE;
+DROP FUNCTION IF EXISTS sync_growth_activity() CASCADE;
+
+-- ====================================================================
+-- DROP TABLES (in correct order due to foreign key constraints)
+-- ====================================================================
+
+DROP TABLE IF EXISTS growth_measurements CASCADE;
+DROP TABLE IF EXISTS activities CASCADE;
+DROP TABLE IF EXISTS babies CASCADE;
+DROP TABLE IF EXISTS family_members CASCADE;
+DROP TABLE IF EXISTS families CASCADE;
+
+-- ====================================================================
+-- CONFIRMATION MESSAGE
+-- ====================================================================
+
+SELECT '✓ All tables, views, functions, and triggers dropped successfully!' AS status;
+SELECT 'Now setting up V2 schema...' AS next_step;
+
+-- ====================================================================
+-- V2 SCHEMA SETUP
 -- ====================================================================
 
 -- ====================================================================
@@ -169,120 +251,8 @@ ALTER TABLE activities ENABLE ROW LEVEL SECURITY;
 ALTER TABLE family_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE growth_measurements ENABLE ROW LEVEL SECURITY;
 
--- Families policies
-CREATE POLICY "Users can view their families" ON families
-  FOR SELECT USING (
-    id IN (SELECT family_id FROM family_members WHERE user_id = auth.uid())
-  );
-
-CREATE POLICY "Users can update their families" ON families
-  FOR UPDATE USING (
-    id IN (
-      SELECT family_id FROM family_members
-      WHERE user_id = auth.uid() AND role IN ('admin')
-    )
-  );
-
--- Babies policies
-CREATE POLICY "Users can view babies in their families" ON babies
-  FOR SELECT USING (
-    family_id IN (SELECT family_id FROM family_members WHERE user_id = auth.uid())
-  );
-
-CREATE POLICY "Admins can insert babies" ON babies
-  FOR INSERT WITH CHECK (
-    family_id IN (
-      SELECT family_id FROM family_members
-      WHERE user_id = auth.uid() AND role = 'admin'
-    )
-  );
-
-CREATE POLICY "Admins can update babies" ON babies
-  FOR UPDATE USING (
-    family_id IN (
-      SELECT family_id FROM family_members
-      WHERE user_id = auth.uid() AND role = 'admin'
-    )
-  );
-
--- Activities policies
-CREATE POLICY "Users can insert activities for their babies" ON activities
-  FOR INSERT WITH CHECK (
-    baby_id IN (
-      SELECT b.id FROM babies b
-      JOIN family_members fm ON fm.family_id = b.family_id
-      WHERE fm.user_id = auth.uid()
-    )
-  );
-
-CREATE POLICY "Users can view activities for their babies" ON activities
-  FOR SELECT USING (
-    baby_id IN (
-      SELECT b.id FROM babies b
-      JOIN family_members fm ON fm.family_id = b.family_id
-      WHERE fm.user_id = auth.uid()
-    )
-  );
-
-CREATE POLICY "Users can update their own activities" ON activities
-  FOR UPDATE USING (
-    created_by = auth.uid()
-  );
-
-CREATE POLICY "Users can delete their own activities" ON activities
-  FOR DELETE USING (
-    created_by = auth.uid()
-  );
-
--- Growth measurements policies
-CREATE POLICY "Users can insert growth measurements for their babies" ON growth_measurements
-  FOR INSERT WITH CHECK (
-    baby_id IN (
-      SELECT b.id FROM babies b
-      JOIN family_members fm ON fm.family_id = b.family_id
-      WHERE fm.user_id = auth.uid()
-    )
-  );
-
-CREATE POLICY "Users can view growth measurements for their babies" ON growth_measurements
-  FOR SELECT USING (
-    baby_id IN (
-      SELECT b.id FROM babies b
-      JOIN family_members fm ON fm.family_id = b.family_id
-      WHERE fm.user_id = auth.uid()
-    )
-  );
-
-CREATE POLICY "Users can update their own growth measurements" ON growth_measurements
-  FOR UPDATE USING (
-    created_by = auth.uid()
-  );
-
-CREATE POLICY "Users can delete their own growth measurements" ON growth_measurements
-  FOR DELETE USING (
-    created_by = auth.uid()
-  );
-
--- Family members policies
--- Fixed: Uses SECURITY DEFINER function to prevent infinite recursion
-CREATE POLICY "Users can view their family memberships" ON family_members
-  FOR SELECT USING (
-    user_id = auth.uid() OR
-    user_is_in_family(family_id)
-  );
-
 -- ====================================================================
--- REALTIME SUBSCRIPTIONS
--- ====================================================================
-
--- Enable realtime for activities (live updates across devices)
-ALTER PUBLICATION supabase_realtime ADD TABLE activities;
-
--- Enable realtime for growth measurements
-ALTER PUBLICATION supabase_realtime ADD TABLE growth_measurements;
-
--- ====================================================================
--- HELPER FUNCTIONS
+-- HELPER FUNCTIONS (must be created before policies)
 -- ====================================================================
 
 -- Helper function to check if user is in a family (bypasses RLS to prevent recursion)
@@ -340,10 +310,6 @@ RETURNS growth_measurements AS $$
   LIMIT 1;
 $$ LANGUAGE sql;
 
--- ====================================================================
--- TRIGGERS
--- ====================================================================
-
 -- Function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -353,20 +319,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Apply updated_at triggers
-CREATE TRIGGER update_families_updated_at BEFORE UPDATE ON families
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_babies_updated_at BEFORE UPDATE ON babies
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_activities_updated_at BEFORE UPDATE ON activities
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_growth_measurements_updated_at BEFORE UPDATE ON growth_measurements
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
--- Trigger to sync growth activity to growth_measurements table
+-- Function to sync growth activity to growth_measurements table
 CREATE OR REPLACE FUNCTION sync_growth_activity()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -399,23 +352,147 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- ====================================================================
+-- RLS POLICIES (now with helper functions defined)
+-- ====================================================================
+
+-- Families policies
+CREATE POLICY "Users can view their families" ON families
+  FOR SELECT USING (user_is_in_family(id));
+
+CREATE POLICY "Users can create families" ON families
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Admins can update their families" ON families
+  FOR UPDATE USING (
+    id IN (
+      SELECT family_id FROM family_members
+      WHERE user_id = auth.uid() AND role = 'admin'
+    )
+  );
+
+-- Babies policies
+CREATE POLICY "Users can view babies in their families" ON babies
+  FOR SELECT USING (user_is_in_family(family_id));
+
+CREATE POLICY "Admins can insert babies" ON babies
+  FOR INSERT WITH CHECK (
+    family_id IN (
+      SELECT family_id FROM family_members
+      WHERE user_id = auth.uid() AND role = 'admin'
+    )
+  );
+
+CREATE POLICY "Admins can update babies" ON babies
+  FOR UPDATE USING (
+    family_id IN (
+      SELECT family_id FROM family_members
+      WHERE user_id = auth.uid() AND role = 'admin'
+    )
+  );
+
+-- Activities policies
+CREATE POLICY "Users can insert activities for their babies" ON activities
+  FOR INSERT WITH CHECK (
+    baby_id IN (
+      SELECT b.id FROM babies b
+      WHERE user_is_in_family(b.family_id)
+    )
+  );
+
+CREATE POLICY "Users can view activities for their babies" ON activities
+  FOR SELECT USING (
+    baby_id IN (
+      SELECT b.id FROM babies b
+      WHERE user_is_in_family(b.family_id)
+    )
+  );
+
+CREATE POLICY "Users can update their own activities" ON activities
+  FOR UPDATE USING (created_by = auth.uid());
+
+CREATE POLICY "Users can delete their own activities" ON activities
+  FOR DELETE USING (created_by = auth.uid());
+
+-- Growth measurements policies
+CREATE POLICY "Users can insert growth measurements for their babies" ON growth_measurements
+  FOR INSERT WITH CHECK (
+    baby_id IN (
+      SELECT b.id FROM babies b
+      WHERE user_is_in_family(b.family_id)
+    )
+  );
+
+CREATE POLICY "Users can view growth measurements for their babies" ON growth_measurements
+  FOR SELECT USING (
+    baby_id IN (
+      SELECT b.id FROM babies b
+      WHERE user_is_in_family(b.family_id)
+    )
+  );
+
+CREATE POLICY "Users can update their own growth measurements" ON growth_measurements
+  FOR UPDATE USING (created_by = auth.uid());
+
+CREATE POLICY "Users can delete their own growth measurements" ON growth_measurements
+  FOR DELETE USING (created_by = auth.uid());
+
+-- Family members policies (Fixed: Uses SECURITY DEFINER function to prevent infinite recursion)
+CREATE POLICY "Users can view their family memberships" ON family_members
+  FOR SELECT USING (
+    user_id = auth.uid() OR
+    user_is_in_family(family_id)
+  );
+
+CREATE POLICY "Users can add themselves to families" ON family_members
+  FOR INSERT WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "Admins can remove family members" ON family_members
+  FOR DELETE USING (
+    family_id IN (
+      SELECT family_id FROM family_members
+      WHERE user_id = auth.uid() AND role = 'admin'
+    )
+  );
+
+-- ====================================================================
+-- TRIGGERS
+-- ====================================================================
+
+-- Apply updated_at triggers
+CREATE TRIGGER update_families_updated_at BEFORE UPDATE ON families
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_babies_updated_at BEFORE UPDATE ON babies
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_activities_updated_at BEFORE UPDATE ON activities
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_growth_measurements_updated_at BEFORE UPDATE ON growth_measurements
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Trigger to sync growth activity to growth_measurements table
 CREATE TRIGGER sync_growth_to_measurements AFTER INSERT ON activities
   FOR EACH ROW EXECUTE FUNCTION sync_growth_activity();
 
 -- ====================================================================
--- SAMPLE DATA (for development/testing)
+-- REALTIME SUBSCRIPTIONS
 -- ====================================================================
 
--- Uncomment to insert sample data:
-/*
--- Insert a test family
-INSERT INTO families (name, invite_code)
-VALUES ('Test Family', 'TEST01');
+-- Enable realtime for activities (live updates across devices)
+ALTER PUBLICATION supabase_realtime ADD TABLE activities;
 
--- Get family id
-WITH fam AS (SELECT id FROM families WHERE invite_code = 'TEST01')
--- Insert a test baby
-INSERT INTO babies (family_id, name, birth_date, birth_weight, birth_height, gender)
-SELECT id, 'Baby Alice', '2025-12-01', 3.45, 50.5, 'female'
-FROM fam;
-*/
+-- Enable realtime for growth measurements
+ALTER PUBLICATION supabase_realtime ADD TABLE growth_measurements;
+
+-- ====================================================================
+-- COMPLETION MESSAGE
+-- ====================================================================
+
+SELECT '✅ Database reset complete!' AS status;
+SELECT '✅ V2 schema installed successfully!' AS result;
+SELECT 'Tables: families, babies, family_members, activities, growth_measurements' AS tables_created;
+SELECT 'Views: daily_activity_summary, growth_trends, feeding_stats, sleep_stats' AS views_created;
+SELECT 'RLS: All tables secured with Row Level Security policies' AS security;
+SELECT 'Realtime: Enabled for activities and growth_measurements' AS realtime;
