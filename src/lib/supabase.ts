@@ -194,23 +194,17 @@ export const isAuthenticated = async (): Promise<boolean> => {
 /**
  * Helper function to get current user ID
  * Returns null if not authenticated
- *
- * DEVELOPMENT MODE: Returns 'dev-user' if no session exists
- * TODO: Remove this bypass once authentication is implemented
  */
 export const getCurrentUserId = async (): Promise<string | null> => {
   try {
     const { data: { session }, error } = await supabase.auth.getSession();
     if (error || !session) {
-      // DEVELOPMENT BYPASS: Return a test user ID for offline testing
-      console.warn('No authenticated session - using development user ID');
-      return 'dev-user';
+      return null;
     }
     return session.user.id;
   } catch (error) {
     console.error('Error getting current user ID:', error);
-    // DEVELOPMENT BYPASS: Return test user on error
-    return 'dev-user';
+    return null;
   }
 };
 
