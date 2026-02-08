@@ -1,7 +1,7 @@
 # Project Status
 
-**Last Updated:** 2026-01-22
-**Current Phase:** Phase 2 - Core UI Components (Complete)
+**Last Updated:** 2026-02-08
+**Current Phase:** Phase 3 - Home Screen (Complete)
 
 ---
 
@@ -145,12 +145,33 @@
   - [x] Connection tested successfully (all tables accessible)
   - [x] Real-time replication enabled
 
+### Phase 3: Home Screen Implementation (Complete)
+- [x] **Task 8:** Activity Store with Zustand
+  - [x] Created `src/stores/activityStore.ts`
+  - [x] Created `src/stores/__tests__/activityStore.test.ts`
+  - [x] Offline-first state management with AsyncStorage persistence
+  - [x] Background sync integration with Supabase
+  - [x] Methods: logActivity(), getLastActivity(), getTodayActivities(), deleteActivity(), reset()
+  - [x] Unique ID generation: timestamp + random suffix
+  - [x] All 16 store tests passing
+
+- [x] **Task 9:** HomeScreen Implementation
+  - [x] Created `src/screens/HomeScreen.tsx`
+  - [x] Created `src/screens/__tests__/HomeScreen.test.tsx`
+  - [x] 5 activity buttons in 2x3 grid layout
+  - [x] QuickOptionsSheet integration for activity logging
+  - [x] Last activity cards with empty states
+  - [x] Type-safe details mapping for all activity types
+  - [x] Updated App.tsx to render HomeScreen
+  - [x] All 11 HomeScreen tests passing
+  - [x] Total: 93 tests passing (66 components + 16 store + 11 screen)
+
 ## ❌ Not Started
 
-### Phase 3-6: Development
-- [ ] No screens created
-- [ ] No stores implemented
-- [ ] No Supabase integration
+### Phase 4-6: Development
+- [ ] TimelineScreen not implemented
+- [ ] StatsScreen not implemented
+- [ ] Navigation not implemented
 
 ### Deployment
 - [ ] Web deployment not configured with Vercel
@@ -163,33 +184,38 @@
 
 ### Immediate (Start Here)
 
-✅ **Supabase Backend Complete!** Database is set up and connection verified.
+✅ **Phase 3 Complete!** Activity logging is now fully functional with offline-first persistence and real-time sync.
 
-**Phase 3: Home Screen Implementation**
+**Phase 4: Timeline & Navigation**
 
-Now that the backend is ready, proceed with UI development:
+With the home screen working, add navigation and activity history:
 
-1. **Task 8: Create activity store** (`src/stores/activityStore.ts`)
-   - Implement offline-first state management with Zustand
-   - Use AsyncStorage for local persistence
-   - Integrate Supabase sync service for real-time updates
-   - Add methods: logActivity(), getLastActivity(), getTodayActivities(), deleteActivity()
-
-2. **Task 9: Implement HomeScreen** (`src/screens/HomeScreen.tsx`)
-   - Set up GestureHandlerRootView for bottom sheet support
-   - Integrate ActivityButton components (all 5 activity types)
-   - Add QuickOptionsSheet for activity-specific options
-   - Display LastActivityCard for each activity type
+1. **Task 10: Create TimelineScreen** (`src/screens/TimelineScreen.tsx`)
+   - Display chronological activity history
+   - Group activities by date
+   - Use TimelineItem component for each activity
+   - Add pull-to-refresh functionality
    - Connect to activity store
-   - Test offline-first behavior with real-time sync
 
-**Why this order:** The activity store is the central data hub. Once built, the HomeScreen can immediately display and log activities with full backend sync.
+2. **Task 11: Create StatsScreen** (`src/screens/StatsScreen.tsx`)
+   - Display daily and weekly statistics
+   - Count activities by type
+   - Show trends and patterns
+   - Use simple counters for MVP
+
+3. **Task 12: Add Navigation**
+   - Set up React Navigation bottom tabs
+   - Three tabs: Home (🏠), Timeline (📋), Stats (📊)
+   - Configure tab bar styling
+   - Test navigation between screens
+
+**Why this order:** Timeline shows logged activities, Stats displays analytics, and navigation ties everything together.
 
 ---
 
 ## 📊 Progress Tracker
 
-### Overall Progress: 65%
+### Overall Progress: 75%
 
 | Phase | Status | Progress |
 |-------|--------|----------|
@@ -198,8 +224,8 @@ Now that the backend is ready, proceed with UI development:
 | Supabase Setup Files | ✅ Complete | 100% (4/4 files) |
 | Supabase Deployment | ✅ Complete | 100% (V2 deployed & tested) |
 | Phase 2: Core UI | ✅ Complete | 100% (3/3 tasks) |
-| Phase 3: Home Screen | ❌ Not Started | 0% (2/2 tasks) |
-| Phase 4: Timeline | ❌ Not Started | 0% |
+| Phase 3: Home Screen | ✅ Complete | 100% (2/2 tasks) |
+| Phase 4: Timeline & Navigation | ❌ Not Started | 0% (3/3 tasks) |
 | Phase 5: Stats | ❌ Not Started | 0% |
 | Phase 6: Supabase Integration | ✅ Ready | 100% (backend deployed, sync code ready) |
 | Web Deployment | ⚠️ Config Ready | 50% |
@@ -378,6 +404,41 @@ Project now 65% complete. Supabase backend fully deployed and verified!
 Next steps:
 - Task 8: Create activity store with Zustand (Phase 3)
 - Task 9: Implement HomeScreen (Phase 3)
+
+Session 7 (2026-02-08):
+- Completed Phase 3: Home Screen Implementation (100%)
+- Completed Task 8: Activity Store with Zustand
+  * Created offline-first state management with Zustand
+  * Implemented AsyncStorage persistence (@peekaboo:activities key)
+  * Integrated background sync with Supabase sync service
+  * Methods: logActivity(), getLastActivity(), getTodayActivities(), deleteActivity(), reset()
+  * Unique ID generation: timestamp + random suffix
+  * Fire-and-forget sync pattern (non-blocking, error-resilient)
+  * All 16 store tests passing (TDD approach)
+- Completed Task 9: HomeScreen Implementation
+  * Created main activity logging interface
+  * 5 activity buttons in 2x3 grid layout
+  * QuickOptionsSheet integration for option selection
+  * Last activity cards showing recent status with empty states
+  * Type-safe details mapping (switch statement ensures correct types)
+  * Memoized lastActivities computation for performance
+  * GestureHandlerRootView wrapper for bottom sheet support
+  * All 11 HomeScreen tests passing (TDD approach)
+  * Updated App.tsx to render HomeScreen
+- Total test suite: 93 tests passing (66 components + 16 store + 11 screen)
+
+Key achievements:
+- Offline-first architecture: Activities log instantly, sync in background
+- Full type safety: All activity types mapped correctly via discriminated unions
+- Test-driven development: All features implemented with tests first
+- Production-ready: Error handling, memoization, proper React patterns
+
+Project now 75% complete. Users can now log activities with full offline-first functionality!
+
+Next recommended steps:
+- Phase 4: TimelineScreen to view activity history
+- Phase 4: StatsScreen to display analytics
+- Phase 4: React Navigation for bottom tabs (Home | Timeline | Stats)
 ```
 
 ---
