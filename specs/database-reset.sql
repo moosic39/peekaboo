@@ -9,19 +9,21 @@
 -- Disable real-time publications first
 DO $$
 BEGIN
-  -- Wrap in error handling block in case publication doesn't exist yet
+  -- Wrap in error handling block in case tables aren't in publication
   BEGIN
-    ALTER PUBLICATION supabase_realtime DROP TABLE IF EXISTS activities;
+    ALTER PUBLICATION supabase_realtime DROP TABLE activities;
   EXCEPTION
     WHEN undefined_object THEN NULL;
     WHEN undefined_table THEN NULL;
+    WHEN others THEN NULL;
   END;
 
   BEGIN
-    ALTER PUBLICATION supabase_realtime DROP TABLE IF EXISTS growth_measurements;
+    ALTER PUBLICATION supabase_realtime DROP TABLE growth_measurements;
   EXCEPTION
     WHEN undefined_object THEN NULL;
     WHEN undefined_table THEN NULL;
+    WHEN others THEN NULL;
   END;
 END $$;
 
