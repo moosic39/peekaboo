@@ -1,8 +1,8 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, TouchableOpacityProps } from 'react-native';
 import { colors } from '@/constants/colors';
 
-export interface FormButtonProps {
+export interface FormButtonProps extends Omit<TouchableOpacityProps, 'style'> {
   onPress: () => void;
   title: string;
   loading?: boolean;
@@ -20,6 +20,7 @@ export const FormButton: React.FC<FormButtonProps> = ({
   loading = false,
   disabled = false,
   variant = 'primary',
+  ...rest
 }) => {
   const isDisabled = disabled || loading;
 
@@ -57,6 +58,7 @@ export const FormButton: React.FC<FormButtonProps> = ({
       accessibilityLabel={title}
       accessibilityRole="button"
       accessibilityState={{ disabled: isDisabled, busy: loading }}
+      {...rest}
     >
       {loading ? (
         <ActivityIndicator color={getTextColor()} />
