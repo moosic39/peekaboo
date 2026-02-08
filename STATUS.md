@@ -121,13 +121,31 @@
   - [x] Security best practices
   - [x] Comprehensive troubleshooting section
 
-## ❌ Not Started
+### Supabase Project Deployment (Complete)
+- [x] **Database Reset Script:** Created `specs/database-reset.sql`
+  - [x] Comprehensive drop script for clean reset
+  - [x] V2 schema setup with all enhancements
+  - [x] RLS policies with infinite recursion fix
+  - [x] Real-time subscriptions enabled
+- [x] **RLS Fix Scripts:** Created fix-rls-policies.sql
+  - [x] Quick fix for V1 schema
+  - [x] SECURITY DEFINER helper functions
+- [x] **Connection Test:** Created `test-connection.js`
+  - [x] Tests all table access
+  - [x] Verifies RLS policies working
+  - [x] Environment variable validation
+- [x] **Reset Guide:** Created `docs/DATABASE-RESET-GUIDE.md`
+  - [x] Complete instructions for database reset
+  - [x] V2 schema explanation
+  - [x] Troubleshooting guide
+- [x] **Supabase Project Deployed**
+  - [x] Project created at supabase.com
+  - [x] V2 database schema deployed (specs/database-reset.sql)
+  - [x] `.env` file configured with credentials
+  - [x] Connection tested successfully (all tables accessible)
+  - [x] Real-time replication enabled
 
-### Supabase Project Deployment (User Action Required)
-- [ ] Supabase project not created yet (requires supabase.com account)
-- [ ] Database schema not deployed yet (run SQL in Supabase dashboard)
-- [ ] No `.env` file exists (copy from .env.example and fill in credentials)
-- [ ] Environment variables not configured (waiting for Supabase credentials)
+## ❌ Not Started
 
 ### Phase 3-6: Development
 - [ ] No screens created
@@ -145,47 +163,45 @@
 
 ### Immediate (Start Here)
 
-**Option A: Deploy Supabase Backend** (Required for Production)
-Follow the comprehensive guide in `docs/SUPABASE-SETUP.md`:
-1. Create Supabase project at https://supabase.com
-2. Run `specs/database-schema.sql` in SQL Editor
-3. Get API credentials from project settings
-4. Create `.env` file: `cp .env.example .env`
-5. Fill in credentials in `.env` file
-6. Enable real-time replication for activities table
-7. Test connection using examples in setup guide
+✅ **Supabase Backend Complete!** Database is set up and connection verified.
 
-**Option B: Continue UI Development** (Can Work Offline)
-Proceed with Phase 3 without backend:
-1. Task 8: Create activity store with Zustand (`src/stores/activityStore.ts`)
-   - Implement offline-first state management
-   - Use AsyncStorage for persistence
-   - Prepare for Supabase sync integration
-2. Task 9: Implement HomeScreen (`src/screens/HomeScreen.tsx`)
-   - Integrate ActivityButton components
-   - Add QuickOptionsSheet for activity options
-   - Implement LastActivityCard for status display
-   - Test with local state (no backend needed yet)
+**Phase 3: Home Screen Implementation**
 
-**Both options are valid:** You can develop the UI without Supabase initially, then integrate sync later. The architecture supports this approach.
+Now that the backend is ready, proceed with UI development:
+
+1. **Task 8: Create activity store** (`src/stores/activityStore.ts`)
+   - Implement offline-first state management with Zustand
+   - Use AsyncStorage for local persistence
+   - Integrate Supabase sync service for real-time updates
+   - Add methods: logActivity(), getLastActivity(), getTodayActivities(), deleteActivity()
+
+2. **Task 9: Implement HomeScreen** (`src/screens/HomeScreen.tsx`)
+   - Set up GestureHandlerRootView for bottom sheet support
+   - Integrate ActivityButton components (all 5 activity types)
+   - Add QuickOptionsSheet for activity-specific options
+   - Display LastActivityCard for each activity type
+   - Connect to activity store
+   - Test offline-first behavior with real-time sync
+
+**Why this order:** The activity store is the central data hub. Once built, the HomeScreen can immediately display and log activities with full backend sync.
 
 ---
 
 ## 📊 Progress Tracker
 
-### Overall Progress: 58%
+### Overall Progress: 65%
 
 | Phase | Status | Progress |
 |-------|--------|----------|
 | Pre-Setup (Deployment Configs) | ✅ Complete | 100% |
 | Phase 1: Project Setup | ✅ Complete | 100% |
 | Supabase Setup Files | ✅ Complete | 100% (4/4 files) |
-| Supabase Deployment | ⚠️ User Action Needed | 0% |
+| Supabase Deployment | ✅ Complete | 100% (V2 deployed & tested) |
 | Phase 2: Core UI | ✅ Complete | 100% (3/3 tasks) |
-| Phase 3: Home Screen | ❌ Not Started | 0% |
+| Phase 3: Home Screen | ❌ Not Started | 0% (2/2 tasks) |
 | Phase 4: Timeline | ❌ Not Started | 0% |
 | Phase 5: Stats | ❌ Not Started | 0% |
-| Phase 6: Supabase Integration | ✅ Sync Ready | 50% (code ready, needs deployment) |
+| Phase 6: Supabase Integration | ✅ Ready | 100% (backend deployed, sync code ready) |
 | Web Deployment | ⚠️ Config Ready | 50% |
 | Mobile Deployment | ⚠️ Config Ready | 50% |
 
@@ -328,6 +344,40 @@ Session 5 (2026-01-22):
 All Supabase code is production-ready. Next step: Either deploy Supabase backend (user action required) or continue with Phase 3 UI development (can work offline).
 
 Project now 58% complete. Backend infrastructure fully implemented and documented.
+
+Session 6 (2026-02-08):
+- Fixed RLS infinite recursion bug in database schemas
+  * Issue: family_members policies caused infinite loop when querying themselves
+  * Solution: Created SECURITY DEFINER helper functions (user_is_in_family, user_is_family_admin)
+  * Applied fix to both database-schema.sql (v1) and database-schema-v2.sql (v2)
+- Created comprehensive database reset script (specs/database-reset.sql):
+  * Drops all tables, views, functions, triggers in safe order
+  * Sets up V2 schema with all enhancements
+  * Includes RLS fix by default
+  * 498 lines with full error handling
+- Created quick fix script (specs/fix-rls-policies.sql) for V1 schema only
+- Created connection test script (test-connection.js):
+  * Tests all 4 core tables (families, babies, activities, family_members)
+  * Validates environment variables
+  * Color-coded output for easy debugging
+  * Installed dotenv dependency for .env support
+- Created comprehensive reset guide (docs/DATABASE-RESET-GUIDE.md):
+  * Step-by-step instructions for database reset
+  * V2 schema features explanation
+  * Troubleshooting section
+  * 186 lines of detailed documentation
+- Deployed Supabase V2 schema successfully:
+  * Ran database-reset.sql in Supabase SQL Editor
+  * All tables created with proper RLS policies
+  * Connection test passed: all tables accessible (0 rows returned)
+  * Real-time subscriptions enabled
+- Fixed ALTER PUBLICATION syntax error in reset script
+
+Project now 65% complete. Supabase backend fully deployed and verified!
+
+Next steps:
+- Task 8: Create activity store with Zustand (Phase 3)
+- Task 9: Implement HomeScreen (Phase 3)
 ```
 
 ---
