@@ -34,6 +34,9 @@ export default {
       eas: {
         projectId: "your-project-id-from-eas"
       }
-    }
+    },
+    plugins: [
+      "@react-native-community/datetimepicker"
+    ]
   }
 };
