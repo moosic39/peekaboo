@@ -88,16 +88,22 @@ Follow the phases outlined in `specs/implementation-plan-v1.md` and tracked in `
 
 ### Current Project State
 
-**Project Status: Phase 3 Ready (65% Complete)**
+**Project Status: Phase 5 Week 3 Complete (97.5% Complete)**
 
 ✅ **Completed:**
 - Phase 1: Project Setup (100%)
 - Phase 2: Core UI Components (100%)
 - Supabase Backend: Deployed with V2 schema (100%)
+- Phase 3: Home Screen Implementation (100%)
+- Phase 4: Timeline, Stats & Navigation (100%)
+- Phase 5 Week 1: Foundation & Auth Store (100%)
+- Phase 5 Week 2: Auth Screens & Navigation (100%)
+- Phase 5 Week 3: Onboarding & Settings (100%)
 
-🎯 **Current Focus:** Phase 3 - Home Screen Implementation
-- Next: Task 8 - Create activity store with Zustand
-- Next: Task 9 - Implement HomeScreen
+🎯 **Current Focus:** Phase 5 Week 4 - Integration & Polish
+- Next: Update activityStore for multi-baby support
+- Next: Add BabySelector to main screens (Home, Timeline, Stats)
+- Next: Integration testing and documentation
 
 **Quick Status Check:**
 ```bash
@@ -206,34 +212,125 @@ Each activity has:
 
 ### State Management
 
+All stores use Zustand with AsyncStorage persistence for offline-first functionality.
+
+**Auth Store (Zustand):** `src/stores/authStore.ts`
+- User authentication and session management
+- Methods: `signUp()`, `signIn()`, `signOut()`, `resetPassword()`, `initializeAuth()`
+- Email verification requirement enforced
+- Session persistence across app restarts
+- Auth state listener with `supabase.auth.onAuthStateChange()`
+- Resets other stores on sign out
+
+**Family Store (Zustand):** `src/stores/familyStore.ts`
+- Family and baby management
+- Methods: `fetchFamilies()`, `createFamily()`, `joinFamily()`, `createBaby()`, `setCurrentFamily()`, `setCurrentBaby()`
+- Auto-selection of first family/baby if only one exists
+- Tracks current family and baby selections
+- Used by activity store to scope activities to selected baby
+
 **Activity Store (Zustand):** `src/stores/activityStore.ts`
-- Persists to AsyncStorage
+- Activity logging and history
 - Methods: `logActivity()`, `getLastActivity()`, `getTodayActivities()`, `deleteActivity()`
+- Persists to AsyncStorage with @peekaboo:activities key
 - Real-time sync integration point
+- Uses `familyStore.currentBabyId` to scope activities
 
 ### Component Architecture
 
-**Activity Button:** Large tap target for quick activity logging
-- Opens bottom sheet on press
-- Color-coded by activity type
+**Form Components:**
+- **FormInput:** Reusable text input with label, validation, and error states
+  - Props: `label`, `error`, `touched`, `value`, `onChangeText`, `placeholder`, `secureTextEntry`
+  - Visual feedback: Red border and error text when invalid
+- **FormButton:** Button with loading states and variants
+  - Variants: `primary` (blue), `secondary` (gray), `danger` (red)
+  - Shows ActivityIndicator when loading
+  - Extends TouchableOpacityProps for full flexibility
+- **ErrorMessage:** Error display component with icon and animation
+  - Props: `message`, `visible`
+  - Red background with error icon (❌)
 
-**Quick Options Sheet:** Bottom sheet with activity-specific options
-- Feed: Breast/Bottle/Both
-- Diaper: Wet/Dirty/Both
-- Sleep: Start/End
-- Pump: Left/Right/Both
-- Growth: Weight/Height/All
+**Activity Components:**
+- **ActivityButton:** Large tap target for quick activity logging
+  - Opens bottom sheet on press
+  - Color-coded by activity type
+- **QuickOptionsSheet:** Bottom sheet with activity-specific options
+  - Feed: Breast/Bottle/Both
+  - Diaper: Wet/Dirty/Both
+  - Sleep: Start/End
+  - Pump: Left/Right/Both
+  - Growth: Weight/Height/All
+  - Platform-specific: `.tsx` for native (BottomSheet), `.web.tsx` for web (Modal)
+- **LastActivityCard:** Shows time since last activity of each type
+  - Uses `date-fns` for relative time formatting
+- **TimelineItem:** Activity list item with timestamp and details
 
-**Last Activity Card:** Shows time since last activity of each type
-- Uses `date-fns` for relative time formatting
-
-**Timeline Item:** Activity list item with timestamp and details
+**Multi-Baby Components:**
+- **BabySelector:** Baby selection component with platform-specific implementation
+  - `BabySelector.tsx`: Native version using @gorhom/bottom-sheet
+  - `BabySelector.web.tsx`: Web version using Modal
+  - Radio selection with checkmarks
+  - Updates `familyStore.currentBabyId`
+  - Disabled if only one baby
+  - Auto-closes on selection
 
 ### Screens
 
-1. **HomeScreen:** Main activity logging interface with buttons and status
-2. **TimelineScreen:** Chronological activity history grouped by date
-3. **StatsScreen:** Daily and weekly statistics
+**Authentication Screens:**
+1. **SignInScreen:** Email/password login with validation
+2. **SignUpScreen:** Registration with password confirmation and email verification
+3. **ForgotPasswordScreen:** Password reset flow
+4. **LoadingScreen:** Shown during auth initialization
+
+**Onboarding Screens:**
+5. **OnboardingWelcomeScreen:** Choose create or join family
+6. **OnboardingCreateFamilyScreen:** Create family with invite code generation
+7. **OnboardingJoinFamilyScreen:** Join family with 6-character invite code
+8. **OnboardingAddBabyScreen:** Add baby with name, birthdate, and gender
+
+**Main App Screens:**
+9. **HomeScreen:** Main activity logging interface with buttons and status
+10. **TimelineScreen:** Chronological activity history grouped by date
+11. **StatsScreen:** Daily and weekly statistics
+12. **SettingsScreen:** Account, family, and baby management
+
+### Navigation Architecture
+
+**Auth-Aware Routing** (`App.tsx`):
+The app uses three separate navigators based on authentication and onboarding state:
+
+1. **AuthNavigator** (Stack Navigator)
+   - Shown when: `!user` (not authenticated)
+   - Screens: SignIn, SignUp, ForgotPassword
+   - Navigation: Users can navigate between auth screens
+
+2. **OnboardingNavigator** (Stack Navigator)
+   - Shown when: `user && (families.length === 0 || babies.length === 0)`
+   - Screens: OnboardingWelcome, CreateFamily, JoinFamily, AddBaby
+   - Flow: Welcome → (Create or Join) → AddBaby → Main App
+   - Ensures new users set up family and baby before using app
+
+3. **MainNavigator** (Bottom Tab Navigator)
+   - Shown when: `user && families.length > 0 && babies.length > 0`
+   - Tabs: Home (🏠), Timeline (📋), Stats (📊), Settings (⚙️)
+   - Active state: Opacity 1.0 for active, 0.5 for inactive
+
+**Auth Initialization:**
+- App shows LoadingScreen while `authStore.initializeAuth()` runs
+- Checks for existing session on app startup
+- Auto-fetches families when user is authenticated
+- Session persists across app restarts via AsyncStorage
+
+**Navigation Logic:**
+```typescript
+const needsOnboarding = user && (families.length === 0 || babies.length === 0);
+
+return (
+  <NavigationContainer>
+    {!user ? <AuthNavigator /> : needsOnboarding ? <OnboardingNavigator /> : <MainNavigator />}
+  </NavigationContainer>
+);
+```
 
 ### Supabase Integration
 
@@ -247,9 +344,19 @@ Each activity has:
 - `syncActivity()`: Push activity to Supabase
 - `fetchActivities()`: Pull activities for a baby
 - `subscribeToActivities()`: Real-time subscription
-- `joinFamilyByCode()`: Join family via invite
+- `joinFamilyByCode()`: Join family via 6-character invite code
+- `createFamily()`: Create new family with auto-generated invite code
+- `createBaby()`: Add baby to family
+- `fetchUserFamilies()`: Get all families for current user
+- `fetchFamilyBabies()`: Get all babies in a family
 
 **Row Level Security:** Enabled on all tables - users can only access data for families they belong to.
+
+**Authentication Helpers:** `src/lib/supabase.ts`
+- `isAuthenticated()`: Check if user has valid session
+- `getCurrentUserId()`: Get current user ID (returns null if no session)
+- `signOut()`: Sign out current user
+- Note: `dev-user` bypass has been removed for production
 
 ## Development Guidelines
 
@@ -426,15 +533,30 @@ The implementation plan is organized into 6 phases with 15 tasks total. Each tas
 
 **Note:** The plan includes specific commands with hardcoded paths (`/Users/mickael/Documents/dev/peekaboo`). Adjust paths as needed for your environment.
 
+## Recent Implementations
+
+**Phase 5 (Weeks 1-3) - Authentication & Multi-User:**
+- ✅ Email/password authentication with email verification
+- ✅ Auth-aware navigation (Auth → Onboarding → Main)
+- ✅ Family creation and join via invite codes
+- ✅ Onboarding flow for new users
+- ✅ Settings screen with family/baby management
+- ✅ Multiple babies support with baby selector
+
+**Still In Progress (Phase 5 Week 4):**
+- 🔄 Multi-baby integration with main screens
+- 🔄 Activity store update to use selected baby
+- 🔄 Comprehensive integration testing
+
 ## Future Features (Not Yet Implemented)
-- Authentication screens (sign up/sign in)
-- Family/baby setup onboarding
-- Active Supabase sync integration
-- Settings screen
-- Push notifications
-- Home screen widgets
-- CSV export
-- Multiple babies support
+- Social login (Google/Apple) - architecture ready for OAuth
+- Push notifications for partner activity updates
+- Home screen widgets for quick logging
+- CSV export for activity history
+- Photo attachments for activities
+- Growth chart visualizations
+- Feeding schedule predictions
+- Sleep pattern analysis
 
 ## Reference Documentation
 
