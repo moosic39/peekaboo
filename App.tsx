@@ -6,6 +6,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { colors } from './src/constants/colors';
 import { useAuthStore } from './src/stores/authStore';
+import { useFamilyStore } from './src/stores/familyStore';
 
 // Main screens
 import HomeScreen from './src/screens/HomeScreen';
@@ -19,6 +20,12 @@ import ForgotPasswordScreen from './src/screens/ForgotPasswordScreen';
 
 // Loading screen
 import LoadingScreen from './src/screens/LoadingScreen';
+
+// Onboarding screens
+import OnboardingWelcomeScreen from './src/screens/OnboardingWelcomeScreen';
+import OnboardingCreateFamilyScreen from './src/screens/OnboardingCreateFamilyScreen';
+import OnboardingJoinFamilyScreen from './src/screens/OnboardingJoinFamilyScreen';
+import OnboardingAddBabyScreen from './src/screens/OnboardingAddBabyScreen';
 
 const Tab = createBottomTabNavigator();
 const AuthStack = createNativeStackNavigator();
@@ -58,7 +65,6 @@ function AuthNavigator() {
 /**
  * Onboarding Navigator - New user setup flow
  * Screens: Welcome, CreateFamily, JoinFamily, AddBaby
- * NOTE: Full implementation in Week 3 - placeholder for now
  */
 function OnboardingNavigator() {
   return (
@@ -67,10 +73,21 @@ function OnboardingNavigator() {
         headerShown: false,
       }}
     >
-      {/* TODO: Week 3 - Add onboarding screens */}
       <OnboardingStack.Screen
-        name="OnboardingPlaceholder"
-        component={() => <LoadingScreen />}
+        name="OnboardingWelcome"
+        component={OnboardingWelcomeScreen}
+      />
+      <OnboardingStack.Screen
+        name="OnboardingCreateFamily"
+        component={OnboardingCreateFamilyScreen}
+      />
+      <OnboardingStack.Screen
+        name="OnboardingJoinFamily"
+        component={OnboardingJoinFamilyScreen}
+      />
+      <OnboardingStack.Screen
+        name="OnboardingAddBaby"
+        component={OnboardingAddBabyScreen}
       />
     </OnboardingStack.Navigator>
   );
@@ -132,12 +149,14 @@ function MainNavigator() {
  * 3. If authenticated but needs onboarding → OnboardingNavigator
  * 4. If authenticated and onboarded → MainNavigator
  *
- * Onboarding check (Week 3):
+ * Onboarding check:
  * - needsOnboarding = user && (families.length === 0 || babies.length === 0)
+ * - Automatically fetches families when user is authenticated
  */
 export default function App() {
   const [initializing, setInitializing] = useState(true);
   const { user, initializeAuth } = useAuthStore();
+  const { families, babies, fetchFamilies } = useFamilyStore();
 
   useEffect(() => {
     // Initialize auth state on app startup
@@ -146,14 +165,21 @@ export default function App() {
     });
   }, [initializeAuth]);
 
+  useEffect(() => {
+    // Fetch families when user is authenticated
+    if (user) {
+      fetchFamilies();
+    }
+  }, [user, fetchFamilies]);
+
   // Show loading screen while checking auth state
   if (initializing) {
     return <LoadingScreen />;
   }
 
   // Determine which navigator to show
-  // TODO: Week 3 - Add onboarding check with familyStore
-  const needsOnboarding = false; // Placeholder - will use familyStore in Week 3
+  // User needs onboarding if they have no families or no babies
+  const needsOnboarding = user && (families.length === 0 || babies.length === 0);
 
   return (
     <NavigationContainer>
