@@ -409,6 +409,91 @@ export const fetchFamilyBabies = async (familyId: string): Promise<Baby[]> => {
   }
 };
 
+/**
+ * Create a new family
+ * - Generates unique invite code
+ * - Creates family and adds current user as admin
+ * - Returns the created family
+ */
+export const createFamily = async (name: string): Promise<Family | null> => {
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      console.error('Cannot create family: User not authenticated');
+      return null;
+    }
+
+    // Generate 6-character uppercase invite code
+    const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+
+    // Create family
+    const { data: family, error: familyError } = await supabase
+      .from('families')
+      .insert({ name, invite_code: inviteCode })
+      .select()
+      .single();
+
+    if (familyError || !family) {
+      console.error('Error creating family:', familyError);
+      return null;
+    }
+
+    // Add current user as admin
+    const { error: memberError } = await supabase
+      .from('family_members')
+      .insert({
+        family_id: family.id,
+        user_id: userId,
+        role: 'admin',
+      });
+
+    if (memberError) {
+      console.error('Error adding user to family:', memberError);
+      // Family was created but membership failed - still return the family
+    }
+
+    return family as Family;
+  } catch (error) {
+    console.error('Unexpected error creating family:', error);
+    return null;
+  }
+};
+
+/**
+ * Create a new baby profile
+ * - Adds baby to specified family
+ * - Returns the created baby
+ */
+export const createBaby = async (
+  familyId: string,
+  name: string,
+  birthdate: string,
+  gender?: 'male' | 'female' | 'other' | 'prefer_not_to_say'
+): Promise<Baby | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('babies')
+      .insert({
+        family_id: familyId,
+        name,
+        birthdate,
+        gender,
+      })
+      .select()
+      .single();
+
+    if (error || !data) {
+      console.error('Error creating baby:', error);
+      return null;
+    }
+
+    return data as Baby;
+  } catch (error) {
+    console.error('Unexpected error creating baby:', error);
+    return null;
+  }
+};
+
 // ============================================
 // INTERNAL HELPER FUNCTIONS
 // ============================================

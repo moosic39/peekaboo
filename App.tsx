@@ -1,14 +1,28 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Text } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { colors } from './src/constants/colors';
+import { useAuthStore } from './src/stores/authStore';
+
+// Main screens
 import HomeScreen from './src/screens/HomeScreen';
 import TimelineScreen from './src/screens/TimelineScreen';
 import StatsScreen from './src/screens/StatsScreen';
 
+// Auth screens
+import SignInScreen from './src/screens/SignInScreen';
+import SignUpScreen from './src/screens/SignUpScreen';
+import ForgotPasswordScreen from './src/screens/ForgotPasswordScreen';
+
+// Loading screen
+import LoadingScreen from './src/screens/LoadingScreen';
+
 const Tab = createBottomTabNavigator();
+const AuthStack = createNativeStackNavigator();
+const OnboardingStack = createNativeStackNavigator();
 
 interface TabIconProps {
   emoji: string;
@@ -23,46 +37,133 @@ function TabIcon({ emoji, focused }: TabIconProps) {
   );
 }
 
+/**
+ * Auth Navigator - Unauthenticated user flow
+ * Screens: SignIn, SignUp, ForgotPassword
+ */
+function AuthNavigator() {
+  return (
+    <AuthStack.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <AuthStack.Screen name="SignIn" component={SignInScreen} />
+      <AuthStack.Screen name="SignUp" component={SignUpScreen} />
+      <AuthStack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+    </AuthStack.Navigator>
+  );
+}
+
+/**
+ * Onboarding Navigator - New user setup flow
+ * Screens: Welcome, CreateFamily, JoinFamily, AddBaby
+ * NOTE: Full implementation in Week 3 - placeholder for now
+ */
+function OnboardingNavigator() {
+  return (
+    <OnboardingStack.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      {/* TODO: Week 3 - Add onboarding screens */}
+      <OnboardingStack.Screen
+        name="OnboardingPlaceholder"
+        component={() => <LoadingScreen />}
+      />
+    </OnboardingStack.Navigator>
+  );
+}
+
+/**
+ * Main Navigator - Authenticated user flow
+ * Bottom tabs: Home, Timeline, Stats, Settings (Week 3)
+ */
+function MainNavigator() {
+  return (
+    <Tab.Navigator
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: colors.text,
+        tabBarInactiveTintColor: colors.textSecondary,
+        tabBarStyle: {
+          backgroundColor: colors.background,
+          borderTopColor: colors.border,
+          borderTopWidth: 1,
+          height: 60,
+          paddingBottom: 8,
+          paddingTop: 8,
+        },
+      }}
+    >
+      <Tab.Screen
+        name="Home"
+        component={HomeScreen}
+        options={{
+          tabBarIcon: ({ focused }) => <TabIcon emoji="🏠" focused={focused} />,
+        }}
+      />
+      <Tab.Screen
+        name="Timeline"
+        component={TimelineScreen}
+        options={{
+          tabBarIcon: ({ focused }) => <TabIcon emoji="📋" focused={focused} />,
+        }}
+      />
+      <Tab.Screen
+        name="Stats"
+        component={StatsScreen}
+        options={{
+          tabBarIcon: ({ focused }) => <TabIcon emoji="📊" focused={focused} />,
+        }}
+      />
+      {/* TODO: Week 3 - Add Settings tab */}
+    </Tab.Navigator>
+  );
+}
+
+/**
+ * Root App Component
+ *
+ * Auth-aware navigation logic:
+ * 1. Show loading screen while initializing auth
+ * 2. If not authenticated → AuthNavigator
+ * 3. If authenticated but needs onboarding → OnboardingNavigator
+ * 4. If authenticated and onboarded → MainNavigator
+ *
+ * Onboarding check (Week 3):
+ * - needsOnboarding = user && (families.length === 0 || babies.length === 0)
+ */
 export default function App() {
+  const [initializing, setInitializing] = useState(true);
+  const { user, initializeAuth } = useAuthStore();
+
+  useEffect(() => {
+    // Initialize auth state on app startup
+    initializeAuth().finally(() => {
+      setInitializing(false);
+    });
+  }, [initializeAuth]);
+
+  // Show loading screen while checking auth state
+  if (initializing) {
+    return <LoadingScreen />;
+  }
+
+  // Determine which navigator to show
+  // TODO: Week 3 - Add onboarding check with familyStore
+  const needsOnboarding = false; // Placeholder - will use familyStore in Week 3
+
   return (
     <NavigationContainer>
-      <Tab.Navigator
-        screenOptions={{
-          headerShown: false,
-          tabBarActiveTintColor: colors.text,
-          tabBarInactiveTintColor: colors.textSecondary,
-          tabBarStyle: {
-            backgroundColor: colors.background,
-            borderTopColor: colors.border,
-            borderTopWidth: 1,
-            height: 60,
-            paddingBottom: 8,
-            paddingTop: 8,
-          },
-        }}
-      >
-        <Tab.Screen
-          name="Home"
-          component={HomeScreen}
-          options={{
-            tabBarIcon: ({ focused }) => <TabIcon emoji="🏠" focused={focused} />,
-          }}
-        />
-        <Tab.Screen
-          name="Timeline"
-          component={TimelineScreen}
-          options={{
-            tabBarIcon: ({ focused }) => <TabIcon emoji="📋" focused={focused} />,
-          }}
-        />
-        <Tab.Screen
-          name="Stats"
-          component={StatsScreen}
-          options={{
-            tabBarIcon: ({ focused }) => <TabIcon emoji="📊" focused={focused} />,
-          }}
-        />
-      </Tab.Navigator>
+      {!user ? (
+        <AuthNavigator />
+      ) : needsOnboarding ? (
+        <OnboardingNavigator />
+      ) : (
+        <MainNavigator />
+      )}
       <StatusBar style="auto" />
     </NavigationContainer>
   );

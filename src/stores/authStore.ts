@@ -151,13 +151,12 @@ export const useAuthStore = create<AuthStore>()(
             console.warn('Could not reset activityStore:', err);
           }
 
-          // familyStore will be imported here once created
-          // try {
-          //   const { useFamilyStore } = require('./familyStore');
-          //   useFamilyStore.getState().reset();
-          // } catch (err) {
-          //   console.warn('Could not reset familyStore:', err);
-          // }
+          try {
+            const { useFamilyStore } = require('./familyStore');
+            useFamilyStore.getState().reset();
+          } catch (err) {
+            console.warn('Could not reset familyStore:', err);
+          }
         } catch (err) {
           const message = err instanceof Error ? err.message : 'An unexpected error occurred';
           set({ loading: false, error: message });
