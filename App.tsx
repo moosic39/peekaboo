@@ -12,6 +12,7 @@ import { useFamilyStore } from './src/stores/familyStore';
 import HomeScreen from './src/screens/HomeScreen';
 import TimelineScreen from './src/screens/TimelineScreen';
 import StatsScreen from './src/screens/StatsScreen';
+import SettingsScreen from './src/screens/SettingsScreen';
 
 // Auth screens
 import SignInScreen from './src/screens/SignInScreen';
@@ -95,7 +96,7 @@ function OnboardingNavigator() {
 
 /**
  * Main Navigator - Authenticated user flow
- * Bottom tabs: Home, Timeline, Stats, Settings (Week 3)
+ * Bottom tabs: Home, Timeline, Stats, Settings
  */
 function MainNavigator() {
   return (
@@ -135,7 +136,13 @@ function MainNavigator() {
           tabBarIcon: ({ focused }) => <TabIcon emoji="📊" focused={focused} />,
         }}
       />
-      {/* TODO: Week 3 - Add Settings tab */}
+      <Tab.Screen
+        name="Settings"
+        component={SettingsScreen}
+        options={{
+          tabBarIcon: ({ focused }) => <TabIcon emoji="⚙️" focused={focused} />,
+        }}
+      />
     </Tab.Navigator>
   );
 }
