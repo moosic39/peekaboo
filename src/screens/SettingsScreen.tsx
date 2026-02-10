@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
-import Clipboard from '@react-native-clipboard/clipboard';
+import * as Clipboard from 'expo-clipboard';
 import { useAuthStore } from '@/stores/authStore';
 import { useFamilyStore } from '@/stores/familyStore';
 import { FormButton } from '@/components/FormButton';
@@ -33,9 +33,9 @@ export default function SettingsScreen({ navigation }: SettingsScreenProps) {
 
   const currentFamily = families.find((f) => f.id === currentFamilyId);
 
-  const handleCopyInviteCode = () => {
+  const handleCopyInviteCode = async () => {
     if (currentFamily?.invite_code) {
-      Clipboard.setString(currentFamily.invite_code);
+      await Clipboard.setStringAsync(currentFamily.invite_code);
       Alert.alert('Copied!', 'Invite code copied to clipboard');
     }
   };

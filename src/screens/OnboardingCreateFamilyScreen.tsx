@@ -10,7 +10,7 @@ import {
   Alert,
   TouchableOpacity,
 } from 'react-native';
-import Clipboard from '@react-native-clipboard/clipboard';
+import * as Clipboard from 'expo-clipboard';
 import { FormInput } from '@/components/FormInput';
 import { FormButton } from '@/components/FormButton';
 import { ErrorMessage } from '@/components/ErrorMessage';
@@ -55,9 +55,9 @@ export default function OnboardingCreateFamilyScreen({ navigation }: OnboardingC
     }
   };
 
-  const handleCopyCode = () => {
+  const handleCopyCode = async () => {
     if (inviteCode) {
-      Clipboard.setString(inviteCode);
+      await Clipboard.setStringAsync(inviteCode);
       Alert.alert('Copied!', 'Invite code copied to clipboard');
     }
   };
