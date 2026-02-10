@@ -133,13 +133,7 @@ function MainNavigator() {
 }
 
 export default function App() {
-  const [logs, setLogs] = useState<string[]>(['🚀 App starting...']);
   const [initializing, setInitializing] = useState(true);
-
-  const addLog = (msg: string) => {
-    console.log(msg);
-    setLogs(prev => [...prev, msg]);
-  };
 
   // Show immediate error if stores failed to load
   if (authStoreError) {
@@ -166,7 +160,6 @@ export default function App() {
     const authStore = AuthStore();
     user = authStore.user;
     initializeAuth = authStore.initializeAuth;
-    addLog('✅ Auth store loaded');
   } catch (err: any) {
     return (
       <View style={styles.container}>
@@ -181,7 +174,6 @@ export default function App() {
     families = familyStore.families;
     babies = familyStore.babies;
     fetchFamilies = familyStore.fetchFamilies;
-    addLog('✅ Family store loaded');
   } catch (err: any) {
     return (
       <View style={styles.container}>
@@ -192,55 +184,30 @@ export default function App() {
   }
 
   useEffect(() => {
-    addLog('⏳ Starting auth initialization...');
-
     const timeout = setTimeout(() => {
-      addLog('⚠️ Auth init timeout (10s)');
       setInitializing(false);
     }, 10000);
 
     initializeAuth()
       .then(() => {
         clearTimeout(timeout);
-        addLog('✅ Auth initialized');
         setInitializing(false);
       })
       .catch((err: any) => {
         clearTimeout(timeout);
-        addLog('❌ Auth init failed: ' + err.message);
+        console.error('Auth init failed:', err.message);
         setInitializing(false);
       });
   }, []);
 
   useEffect(() => {
     if (user) {
-      addLog(`👤 User: ${user.email}`);
-      fetchFamilies?.()
-        .then(() => addLog(`👨‍👩‍👧 Families: ${families?.length || 0}`))
-        .catch((err: any) => addLog('❌ Fetch families failed: ' + err.message));
-    } else {
-      addLog('🚫 No user');
+      fetchFamilies?.().catch((err: any) => console.error('Fetch families failed:', err.message));
     }
   }, [user]);
 
-  // Show diagnostic screen for first 3 seconds or until initialized
-  if (initializing || logs.length < 5) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.title}>🔍 Diagnostic Mode</Text>
-        <ScrollView style={styles.logContainer}>
-          {logs.map((log, i) => (
-            <Text key={i} style={styles.log}>{log}</Text>
-          ))}
-        </ScrollView>
-        <View style={styles.status}>
-          <Text style={styles.statusText}>Initializing: {initializing ? 'YES' : 'NO'}</Text>
-          <Text style={styles.statusText}>User: {user ? user.email : 'None'}</Text>
-          <Text style={styles.statusText}>Families: {families?.length || 0}</Text>
-          <Text style={styles.statusText}>Babies: {babies?.length || 0}</Text>
-        </View>
-      </View>
-    );
+  if (initializing) {
+    return <LoadingScreen />;
   }
 
   const needsOnboarding = user && (families.length === 0 || babies.length === 0);
