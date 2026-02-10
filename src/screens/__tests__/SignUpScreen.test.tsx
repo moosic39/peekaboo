@@ -9,6 +9,8 @@ jest.mock('@/stores/authStore', () => ({
   useAuthStore: jest.fn(),
 }));
 
+const mockUseAuthStore = useAuthStore as jest.MockedFunction<typeof useAuthStore>;
+
 // Mock Alert
 jest.spyOn(Alert, 'alert');
 
@@ -20,12 +22,12 @@ const mockNavigation = {
 describe('SignUpScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    (useAuthStore as jest.Mock).mockReturnValue({
+    mockUseAuthStore.mockReturnValue({
       signUp: jest.fn(),
       loading: false,
       error: null,
       clearError: jest.fn(),
-    });
+    } as any);
   });
 
   it('renders correctly', () => {
@@ -109,7 +111,7 @@ describe('SignUpScreen', () => {
 
   it('calls signUp with valid data', async () => {
     const mockSignUp = jest.fn().mockResolvedValue(true);
-    (useAuthStore as jest.Mock).mockReturnValue({
+    mockUseAuthStore.mockReturnValue({
       signUp: mockSignUp,
       loading: false,
       error: null,
@@ -137,7 +139,7 @@ describe('SignUpScreen', () => {
 
   it('shows success alert after sign up', async () => {
     const mockSignUp = jest.fn().mockResolvedValue(true);
-    (useAuthStore as jest.Mock).mockReturnValue({
+    mockUseAuthStore.mockReturnValue({
       signUp: mockSignUp,
       loading: false,
       error: null,
@@ -194,7 +196,7 @@ describe('SignUpScreen', () => {
   });
 
   it('displays error message from auth store', () => {
-    (useAuthStore as jest.Mock).mockReturnValue({
+    mockUseAuthStore.mockReturnValue({
       signUp: jest.fn(),
       loading: false,
       error: 'Email already in use',
@@ -209,7 +211,7 @@ describe('SignUpScreen', () => {
   });
 
   it('shows loading state during sign up', () => {
-    (useAuthStore as jest.Mock).mockReturnValue({
+    mockUseAuthStore.mockReturnValue({
       signUp: jest.fn(),
       loading: true,
       error: null,
@@ -237,7 +239,7 @@ describe('SignUpScreen', () => {
 
   it('clears error when navigating away', () => {
     const mockClearError = jest.fn();
-    (useAuthStore as jest.Mock).mockReturnValue({
+    mockUseAuthStore.mockReturnValue({
       signUp: jest.fn(),
       loading: false,
       error: 'Some error',

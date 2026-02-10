@@ -134,7 +134,6 @@ export default function HomeScreen() {
                     key={type}
                     type={lastActivity.type}
                     timestamp={lastActivity.timestamp}
-                    details={lastActivity.details}
                   />
                 );
               }

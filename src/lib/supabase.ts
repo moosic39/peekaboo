@@ -13,6 +13,7 @@
  */
 
 import 'react-native-url-polyfill/auto';
+import { Platform } from 'react-native';
 import { createClient } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -30,17 +31,38 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 /**
+ * Platform-specific storage for Supabase auth
+ * Web uses localStorage, native uses AsyncStorage
+ */
+const supabaseStorage = Platform.OS === 'web'
+  ? {
+      getItem: (key: string) => {
+        if (typeof localStorage === 'undefined') return null;
+        return localStorage.getItem(key);
+      },
+      setItem: (key: string, value: string) => {
+        if (typeof localStorage === 'undefined') return;
+        localStorage.setItem(key, value);
+      },
+      removeItem: (key: string) => {
+        if (typeof localStorage === 'undefined') return;
+        localStorage.removeItem(key);
+      },
+    }
+  : AsyncStorage;
+
+/**
  * Supabase client instance
  *
  * Configured with:
- * - AsyncStorage for session persistence (survives app restarts)
+ * - Platform-specific storage for session persistence (survives app restarts)
  * - Auto-refresh tokens for seamless authentication
  * - Proper error detection
  */
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    // Use AsyncStorage for session persistence (2026 best practice)
-    storage: AsyncStorage,
+    // Use platform-specific storage (localStorage for web, AsyncStorage for native)
+    storage: supabaseStorage,
     // Automatically refresh tokens before they expire
     autoRefreshToken: true,
     // Automatically detect authentication state changes

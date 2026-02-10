@@ -44,7 +44,7 @@ describe('activityStore', () => {
     it('should add activity to store with generated ID and timestamp', () => {
       const { result } = renderHook(() => useActivityStore());
 
-      let activity;
+      let activity: any;
       act(() => {
         activity = result.current.logActivity('feed', { method: 'breast' });
       });
@@ -66,7 +66,7 @@ describe('activityStore', () => {
     it('should call syncActivity in background (non-blocking)', async () => {
       const { result } = renderHook(() => useActivityStore());
 
-      let activity;
+      let activity: any;
       act(() => {
         activity = result.current.logActivity('diaper', { type: 'wet' });
       });
@@ -81,7 +81,7 @@ describe('activityStore', () => {
       const { result } = renderHook(() => useActivityStore());
       (syncService.syncActivity as jest.Mock).mockRejectedValue(new Error('Network error'));
 
-      let activity;
+      let activity: any;
       act(() => {
         activity = result.current.logActivity('sleep', { status: 'start' });
       });
@@ -138,8 +138,8 @@ describe('activityStore', () => {
     it('should return most recent activity of given type', () => {
       const { result } = renderHook(() => useActivityStore());
 
-      let firstFeed;
-      let secondFeed;
+      let firstFeed: any;
+      let secondFeed: any;
 
       act(() => {
         firstFeed = result.current.logActivity('feed', { method: 'breast' });
@@ -148,14 +148,14 @@ describe('activityStore', () => {
       });
 
       const lastFeed = result.current.getLastActivity('feed');
-      expect(lastFeed?.id).toBe(secondFeed.id);
+      expect(lastFeed?.id).toBe(secondFeed?.id);
       expect(lastFeed?.details).toEqual({ method: 'bottle' });
     });
 
     it('should return null after activities are deleted', () => {
       const { result } = renderHook(() => useActivityStore());
 
-      let activity;
+      let activity: any;
       act(() => {
         activity = result.current.logActivity('pump', { side: 'right' });
       });
@@ -210,7 +210,7 @@ describe('activityStore', () => {
     it('should remove activity from store', async () => {
       const { result } = renderHook(() => useActivityStore());
 
-      let activity;
+      let activity: any;
       act(() => {
         activity = result.current.logActivity('sleep', { status: 'start' });
       });
@@ -227,7 +227,7 @@ describe('activityStore', () => {
     it('should call sync service deleteActivity', async () => {
       const { result } = renderHook(() => useActivityStore());
 
-      let activity;
+      let activity: any;
       act(() => {
         activity = result.current.logActivity('growth', { weight: 10 });
       });
@@ -243,7 +243,7 @@ describe('activityStore', () => {
       const { result } = renderHook(() => useActivityStore());
       (syncService.deleteActivity as jest.Mock).mockRejectedValue(new Error('Network error'));
 
-      let activity;
+      let activity: any;
       act(() => {
         activity = result.current.logActivity('diaper', { type: 'wet' });
       });

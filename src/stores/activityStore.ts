@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { platformStorage } from '@/lib/storage';
 import { Activity, ActivityType, ActivityDetails } from '@/types';
 import { syncActivity, deleteActivity as deleteSyncActivity } from '@/lib/sync';
 
@@ -117,7 +117,7 @@ export const useActivityStore = create<ActivityStore>()(
     }),
     {
       name: '@peekaboo:activities',
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: createJSONStorage(() => platformStorage),
     }
   )
 );

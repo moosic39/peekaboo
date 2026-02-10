@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
-import * as Clipboard from '@react-native-clipboard/clipboard';
+import Clipboard from '@react-native-clipboard/clipboard';
 import { useAuthStore } from '@/stores/authStore';
 import { useFamilyStore } from '@/stores/familyStore';
 import { FormButton } from '@/components/FormButton';

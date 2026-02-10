@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '@/lib/supabase';
+import { platformStorage } from '@/lib/storage';
 import type { User, Session, AuthChangeEvent } from '@supabase/supabase-js';
 
 interface AuthStore {
@@ -239,7 +239,7 @@ export const useAuthStore = create<AuthStore>()(
     }),
     {
       name: '@peekaboo:auth',
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: createJSONStorage(() => platformStorage),
       // Only persist user and session, not loading/error
       partialize: (state) => ({
         user: state.user,

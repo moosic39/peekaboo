@@ -8,6 +8,8 @@ jest.mock('@/stores/authStore', () => ({
   useAuthStore: jest.fn(),
 }));
 
+const mockUseAuthStore = useAuthStore as jest.MockedFunction<typeof useAuthStore>;
+
 // Mock navigation
 const mockNavigation = {
   navigate: jest.fn(),
@@ -16,12 +18,12 @@ const mockNavigation = {
 describe('SignInScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    (useAuthStore as jest.Mock).mockReturnValue({
+    mockUseAuthStore.mockReturnValue({
       signIn: jest.fn(),
       loading: false,
       error: null,
       clearError: jest.fn(),
-    });
+    } as any);
   });
 
   it('renders correctly', () => {
@@ -69,7 +71,7 @@ describe('SignInScreen', () => {
 
   it('calls signIn with valid credentials', async () => {
     const mockSignIn = jest.fn().mockResolvedValue(true);
-    (useAuthStore as jest.Mock).mockReturnValue({
+    mockUseAuthStore.mockReturnValue({
       signIn: mockSignIn,
       loading: false,
       error: null,
@@ -118,7 +120,7 @@ describe('SignInScreen', () => {
   });
 
   it('displays error message from auth store', () => {
-    (useAuthStore as jest.Mock).mockReturnValue({
+    mockUseAuthStore.mockReturnValue({
       signIn: jest.fn(),
       loading: false,
       error: 'Invalid credentials',
@@ -133,7 +135,7 @@ describe('SignInScreen', () => {
   });
 
   it('shows loading state during sign in', () => {
-    (useAuthStore as jest.Mock).mockReturnValue({
+    mockUseAuthStore.mockReturnValue({
       signIn: jest.fn(),
       loading: true,
       error: null,
@@ -172,7 +174,7 @@ describe('SignInScreen', () => {
 
   it('clears error when navigating away', () => {
     const mockClearError = jest.fn();
-    (useAuthStore as jest.Mock).mockReturnValue({
+    mockUseAuthStore.mockReturnValue({
       signIn: jest.fn(),
       loading: false,
       error: 'Some error',

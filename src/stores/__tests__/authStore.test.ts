@@ -80,11 +80,13 @@ describe('authStore', () => {
     });
 
     it('should handle sign up error', async () => {
-      const mockError: AuthError = {
+      const mockError = {
         name: 'AuthError',
         message: 'Email already registered',
         status: 400,
-      };
+        code: 'email_exists',
+        __isAuthError: true,
+      } as unknown as AuthError;
 
       (supabase.auth.signUp as jest.Mock).mockResolvedValue({
         data: { user: null, session: null },
@@ -149,11 +151,13 @@ describe('authStore', () => {
     });
 
     it('should handle sign in error', async () => {
-      const mockError: AuthError = {
+      const mockError = {
         name: 'AuthError',
         message: 'Invalid credentials',
         status: 400,
-      };
+        code: 'invalid_credentials',
+        __isAuthError: true,
+      } as unknown as AuthError;
 
       (supabase.auth.signInWithPassword as jest.Mock).mockResolvedValue({
         data: { user: null, session: null },
@@ -241,11 +245,13 @@ describe('authStore', () => {
     });
 
     it('should handle reset password error', async () => {
-      const mockError: AuthError = {
+      const mockError = {
         name: 'AuthError',
         message: 'Email not found',
         status: 400,
-      };
+        code: 'email_not_found',
+        __isAuthError: true,
+      } as unknown as AuthError;
 
       (supabase.auth.resetPasswordForEmail as jest.Mock).mockResolvedValue({
         data: {},
@@ -296,11 +302,13 @@ describe('authStore', () => {
     });
 
     it('should handle initialization error', async () => {
-      const mockError: AuthError = {
+      const mockError = {
         name: 'AuthError',
         message: 'Session error',
         status: 500,
-      };
+        code: 'session_error',
+        __isAuthError: true,
+      } as unknown as AuthError;
 
       (supabase.auth.getSession as jest.Mock).mockResolvedValue({
         data: { session: null },

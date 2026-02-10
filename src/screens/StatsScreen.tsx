@@ -31,7 +31,7 @@ function calculateStats(activities: Activity[], days: number = 1): ActivityStats
   filtered.forEach((activity) => {
     stats[activity.type]++;
 
-    if (activity.type === 'sleep' && activity.details.duration) {
+    if (activity.type === 'sleep' && 'duration' in activity.details && activity.details.duration) {
       stats.sleepMinutes += activity.details.duration;
     }
   });

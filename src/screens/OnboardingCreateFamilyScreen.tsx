@@ -10,7 +10,7 @@ import {
   Alert,
   TouchableOpacity,
 } from 'react-native';
-import * as Clipboard from '@react-native-clipboard/clipboard';
+import Clipboard from '@react-native-clipboard/clipboard';
 import { FormInput } from '@/components/FormInput';
 import { FormButton } from '@/components/FormButton';
 import { ErrorMessage } from '@/components/ErrorMessage';

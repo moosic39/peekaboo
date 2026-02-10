@@ -1,12 +1,29 @@
 import React, { useEffect, useState } from 'react';
-import { Text } from 'react-native';
+import { Text, View, StyleSheet, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { colors } from './src/constants/colors';
-import { useAuthStore } from './src/stores/authStore';
-import { useFamilyStore } from './src/stores/familyStore';
+
+// DIAGNOSTIC MODE - Shows what's happening during initialization
+
+let AuthStore: any;
+let FamilyStore: any;
+let authStoreError: any = null;
+let familyStoreError: any = null;
+
+try {
+  AuthStore = require('./src/stores/authStore').useAuthStore;
+} catch (err) {
+  authStoreError = err;
+}
+
+try {
+  FamilyStore = require('./src/stores/familyStore').useFamilyStore;
+} catch (err) {
+  familyStoreError = err;
+}
 
 // Main screens
 import HomeScreen from './src/screens/HomeScreen';
@@ -45,17 +62,9 @@ function TabIcon({ emoji, focused }: TabIconProps) {
   );
 }
 
-/**
- * Auth Navigator - Unauthenticated user flow
- * Screens: SignIn, SignUp, ForgotPassword
- */
 function AuthNavigator() {
   return (
-    <AuthStack.Navigator
-      screenOptions={{
-        headerShown: false,
-      }}
-    >
+    <AuthStack.Navigator screenOptions={{ headerShown: false }}>
       <AuthStack.Screen name="SignIn" component={SignInScreen} />
       <AuthStack.Screen name="SignUp" component={SignUpScreen} />
       <AuthStack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
@@ -63,41 +72,17 @@ function AuthNavigator() {
   );
 }
 
-/**
- * Onboarding Navigator - New user setup flow
- * Screens: Welcome, CreateFamily, JoinFamily, AddBaby
- */
 function OnboardingNavigator() {
   return (
-    <OnboardingStack.Navigator
-      screenOptions={{
-        headerShown: false,
-      }}
-    >
-      <OnboardingStack.Screen
-        name="OnboardingWelcome"
-        component={OnboardingWelcomeScreen}
-      />
-      <OnboardingStack.Screen
-        name="OnboardingCreateFamily"
-        component={OnboardingCreateFamilyScreen}
-      />
-      <OnboardingStack.Screen
-        name="OnboardingJoinFamily"
-        component={OnboardingJoinFamilyScreen}
-      />
-      <OnboardingStack.Screen
-        name="OnboardingAddBaby"
-        component={OnboardingAddBabyScreen}
-      />
+    <OnboardingStack.Navigator screenOptions={{ headerShown: false }}>
+      <OnboardingStack.Screen name="OnboardingWelcome" component={OnboardingWelcomeScreen} />
+      <OnboardingStack.Screen name="OnboardingCreateFamily" component={OnboardingCreateFamilyScreen} />
+      <OnboardingStack.Screen name="OnboardingJoinFamily" component={OnboardingJoinFamilyScreen} />
+      <OnboardingStack.Screen name="OnboardingAddBaby" component={OnboardingAddBabyScreen} />
     </OnboardingStack.Navigator>
   );
 }
 
-/**
- * Main Navigator - Authenticated user flow
- * Bottom tabs: Home, Timeline, Stats, Settings
- */
 function MainNavigator() {
   return (
     <Tab.Navigator
@@ -147,45 +132,117 @@ function MainNavigator() {
   );
 }
 
-/**
- * Root App Component
- *
- * Auth-aware navigation logic:
- * 1. Show loading screen while initializing auth
- * 2. If not authenticated → AuthNavigator
- * 3. If authenticated but needs onboarding → OnboardingNavigator
- * 4. If authenticated and onboarded → MainNavigator
- *
- * Onboarding check:
- * - needsOnboarding = user && (families.length === 0 || babies.length === 0)
- * - Automatically fetches families when user is authenticated
- */
 export default function App() {
+  const [logs, setLogs] = useState<string[]>(['🚀 App starting...']);
   const [initializing, setInitializing] = useState(true);
-  const { user, initializeAuth } = useAuthStore();
-  const { families, babies, fetchFamilies } = useFamilyStore();
 
-  useEffect(() => {
-    // Initialize auth state on app startup
-    initializeAuth().finally(() => {
-      setInitializing(false);
-    });
-  }, [initializeAuth]);
+  const addLog = (msg: string) => {
+    console.log(msg);
+    setLogs(prev => [...prev, msg]);
+  };
 
-  useEffect(() => {
-    // Fetch families when user is authenticated
-    if (user) {
-      fetchFamilies();
-    }
-  }, [user, fetchFamilies]);
-
-  // Show loading screen while checking auth state
-  if (initializing) {
-    return <LoadingScreen />;
+  // Show immediate error if stores failed to load
+  if (authStoreError) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>❌ Auth Store Error</Text>
+        <Text style={styles.error}>{String(authStoreError)}</Text>
+      </View>
+    );
   }
 
-  // Determine which navigator to show
-  // User needs onboarding if they have no families or no babies
+  if (familyStoreError) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>❌ Family Store Error</Text>
+        <Text style={styles.error}>{String(familyStoreError)}</Text>
+      </View>
+    );
+  }
+
+  let user, initializeAuth, families, babies, fetchFamilies;
+
+  try {
+    const authStore = AuthStore();
+    user = authStore.user;
+    initializeAuth = authStore.initializeAuth;
+    addLog('✅ Auth store loaded');
+  } catch (err: any) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>❌ Auth Store Hook Error</Text>
+        <Text style={styles.error}>{err.message}</Text>
+      </View>
+    );
+  }
+
+  try {
+    const familyStore = FamilyStore();
+    families = familyStore.families;
+    babies = familyStore.babies;
+    fetchFamilies = familyStore.fetchFamilies;
+    addLog('✅ Family store loaded');
+  } catch (err: any) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>❌ Family Store Hook Error</Text>
+        <Text style={styles.error}>{err.message}</Text>
+      </View>
+    );
+  }
+
+  useEffect(() => {
+    addLog('⏳ Starting auth initialization...');
+
+    const timeout = setTimeout(() => {
+      addLog('⚠️ Auth init timeout (10s)');
+      setInitializing(false);
+    }, 10000);
+
+    initializeAuth()
+      .then(() => {
+        clearTimeout(timeout);
+        addLog('✅ Auth initialized');
+        setInitializing(false);
+      })
+      .catch((err: any) => {
+        clearTimeout(timeout);
+        addLog('❌ Auth init failed: ' + err.message);
+        setInitializing(false);
+      });
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      addLog(`👤 User: ${user.email}`);
+      fetchFamilies?.()
+        .then(() => addLog(`👨‍👩‍👧 Families: ${families?.length || 0}`))
+        .catch((err: any) => addLog('❌ Fetch families failed: ' + err.message));
+    } else {
+      addLog('🚫 No user');
+    }
+  }, [user]);
+
+  // Show diagnostic screen for first 3 seconds or until initialized
+  if (initializing || logs.length < 5) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>🔍 Diagnostic Mode</Text>
+        <ScrollView style={styles.logContainer}>
+          {logs.map((log, i) => (
+            <Text key={i} style={styles.log}>{log}</Text>
+          ))}
+        </ScrollView>
+        <View style={styles.status}>
+          <Text style={styles.statusText}>Initializing: {initializing ? 'YES' : 'NO'}</Text>
+          <Text style={styles.statusText}>User: {user ? user.email : 'None'}</Text>
+          <Text style={styles.statusText}>Families: {families?.length || 0}</Text>
+          <Text style={styles.statusText}>Babies: {babies?.length || 0}</Text>
+        </View>
+      </View>
+    );
+  }
+
   const needsOnboarding = user && (families.length === 0 || babies.length === 0);
 
   return (
@@ -201,3 +258,47 @@ export default function App() {
     </NavigationContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#1a1a1a',
+    padding: 20,
+    paddingTop: 60,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  logContainer: {
+    flex: 1,
+    backgroundColor: '#000',
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 20,
+  },
+  log: {
+    color: '#0f0',
+    fontFamily: 'monospace',
+    fontSize: 14,
+    marginBottom: 4,
+  },
+  status: {
+    backgroundColor: '#2a2a2a',
+    padding: 15,
+    borderRadius: 8,
+  },
+  statusText: {
+    color: '#fff',
+    fontSize: 16,
+    marginBottom: 5,
+  },
+  error: {
+    color: '#ff4444',
+    fontSize: 14,
+    fontFamily: 'monospace',
+  },
+});

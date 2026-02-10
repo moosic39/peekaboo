@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { platformStorage } from '@/lib/storage';
 import { Family, Baby } from '@/types';
 import {
   fetchUserFamilies,
@@ -243,7 +243,7 @@ export const useFamilyStore = create<FamilyStore>()(
     }),
     {
       name: '@peekaboo:family',
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: createJSONStorage(() => platformStorage),
     }
   )
 );
