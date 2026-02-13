@@ -230,11 +230,21 @@ All stores use Zustand with AsyncStorage persistence for offline-first functiona
 - Used by activity store to scope activities to selected baby
 
 **Activity Store (Zustand):** `src/stores/activityStore.ts`
-- Activity logging and history
+- Activity logging and history filtered by current baby
 - Methods: `logActivity()`, `getLastActivity()`, `getTodayActivities()`, `deleteActivity()`
-- Persists to AsyncStorage with @peekaboo:activities key
-- Real-time sync integration point
-- Uses `familyStore.currentBabyId` to scope activities
+- Persists all babies' activities to AsyncStorage with @peekaboo:activities key
+- Real-time sync integration point (syncs all babies for partner collaboration)
+- Reads `familyStore.currentBabyId` on-demand for filtering (single source of truth)
+- Auto-filters query results by selected baby (instant baby switching)
+- Defensive null checks for edge cases (no baby selected)
+
+**Multi-Baby Architecture:**
+- `familyStore.currentBabyId` is the single source of truth for baby selection
+- `activityStore` reads current baby ID on-demand (no subscription needed)
+- All activities stored together in memory (enables fast switching + partner sync)
+- Query methods (`getLastActivity`, `getTodayActivities`) auto-filter by current baby
+- Baby switching is instant (no refetch required - all data already in memory)
+- Partner activities sync for all babies, filtered by UI based on selection
 
 ### Component Architecture
 

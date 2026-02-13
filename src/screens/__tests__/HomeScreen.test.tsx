@@ -6,6 +6,14 @@ jest.mock('@/stores/activityStore', () => ({
   useActivityStore: jest.fn(),
 }));
 
+jest.mock('@/stores/familyStore', () => ({
+  useFamilyStore: jest.fn(() => ({
+    currentBabyId: 'test-baby-123',
+    babies: [],
+    families: [],
+  })),
+}));
+
 jest.mock('react-native-gesture-handler', () => {
   const View = require('react-native').View;
   return {

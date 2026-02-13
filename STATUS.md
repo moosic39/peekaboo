@@ -281,11 +281,13 @@
 ## ❌ Not Started
 
 ### Phase 5: Week 4 - Integration & Polish (Remaining)
-- [ ] **Task 11:** Update Activity Store for Multi-Baby Support
-  - [ ] Remove hardcoded baby ID from activityStore
-  - [ ] Get currentBabyId from familyStore
-  - [ ] Subscribe to familyStore baby changes
-  - [ ] Update tests
+- [x] **Task 11:** Update Activity Store for Multi-Baby Support
+  - [x] Remove hardcoded baby ID from activityStore
+  - [x] Get currentBabyId from familyStore (on-demand, no subscription)
+  - [x] Filter activities by current baby in query methods
+  - [x] Update tests (23 unit + 3 integration tests)
+  - [x] Update screen tests with familyStore mocks
+  - [x] All tests passing (~221 total)
 
 - [ ] **Task 12:** Update Main Screens for Multi-Baby Support
   - [ ] Add BabySelector to HomeScreen
@@ -374,7 +376,7 @@ Final documentation updates:
 | Phase 5 Week 1: Foundation | ✅ Complete | 100% (4/4 tasks) |
 | Phase 5 Week 2: Auth Screens | ✅ Complete | 100% (3/3 tasks) |
 | Phase 5 Week 3: Onboarding | ✅ Complete | 100% (3/3 tasks) |
-| Phase 5 Week 4: Integration | ❌ Not Started | 0% (0/4 tasks) |
+| Phase 5 Week 4: Integration | 🚧 In Progress | 25% (1/4 tasks) |
 | Web Deployment | ⚠️ Config Ready | 50% |
 | Mobile Deployment | ⚠️ Config Ready | 50% |
 
@@ -717,6 +719,28 @@ Key achievements in Phase 5 Weeks 1-3:
 Project now 97.5% complete! Authentication and multi-user infrastructure fully implemented.
 
 Next: Phase 5 Week 4 - Integrate baby selector with main screens, update activityStore for multi-baby support, comprehensive testing
+
+Session 12 (2026-02-13):
+- Completed Task 11: Update Activity Store for Multi-Baby Support
+- Implemented single source of truth pattern:
+  * Removed currentBabyId from activityStore state
+  * Added getCurrentBabyId() helper to read from familyStore
+  * Updated logActivity to use current baby ID
+  * Added filtering to getLastActivity and getTodayActivities
+  * Defensive null checks for edge cases
+- Test coverage:
+  * Updated 16 existing unit tests
+  * Added 7 new tests (3 multi-baby + 4 edge cases)
+  * Created 3 integration tests
+  * Updated screen test mocks
+  * 221 tests passing
+- Architecture validated:
+  * All activities stored together (fast switching)
+  * Query methods auto-filter by current baby
+  * Partner sync works seamlessly
+  * No refetch needed when switching babies
+- Documentation updated in CLAUDE.md
+Next: Task 12 - Add BabySelector to main screens
 ```
 
 ---

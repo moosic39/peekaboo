@@ -13,6 +13,14 @@ jest.mock('@/lib/sync', () => ({
 
 jest.mock('@/stores/activityStore');
 
+jest.mock('@/stores/familyStore', () => ({
+  useFamilyStore: jest.fn(() => ({
+    currentBabyId: 'test-baby-123',
+    babies: [],
+    families: [],
+  })),
+}));
+
 import TimelineScreen from '../TimelineScreen';
 import { useActivityStore } from '@/stores/activityStore';
 
