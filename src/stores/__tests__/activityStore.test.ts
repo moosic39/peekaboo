@@ -214,6 +214,173 @@ describe('activityStore', () => {
     });
   });
 
+  describe('multi-baby filtering', () => {
+    it('should filter getLastActivity by current baby', () => {
+      const { result } = renderHook(() => useActivityStore());
+
+      // Mock baby A selected
+      (useFamilyStore.getState as jest.Mock).mockReturnValue({
+        currentBabyId: 'baby-a',
+      });
+
+      let babyAFeed: any;
+      act(() => {
+        babyAFeed = result.current.logActivity('feed', { method: 'breast' });
+      });
+
+      // Manually add activity for baby B (simulating partner sync)
+      act(() => {
+        const babyBFeed = {
+          id: 'baby-b-feed',
+          type: 'feed' as const,
+          timestamp: new Date().toISOString(),
+          baby_id: 'baby-b',
+          created_by: 'partner',
+          details: { method: 'bottle' as const },
+          synced: true,
+        };
+        result.current.activities.push(babyBFeed);
+      });
+
+      // Should only return baby A's feed
+      const lastFeed = result.current.getLastActivity('feed');
+      expect(lastFeed?.id).toBe(babyAFeed.id);
+      expect(lastFeed?.baby_id).toBe('baby-a');
+    });
+
+    it('should filter getTodayActivities by current baby', () => {
+      const { result } = renderHook(() => useActivityStore());
+
+      // Mock baby A selected
+      (useFamilyStore.getState as jest.Mock).mockReturnValue({
+        currentBabyId: 'baby-a',
+      });
+
+      act(() => {
+        result.current.logActivity('feed', { method: 'breast' });
+        result.current.logActivity('diaper', { type: 'wet' });
+      });
+
+      // Mock baby B selected
+      (useFamilyStore.getState as jest.Mock).mockReturnValue({
+        currentBabyId: 'baby-b',
+      });
+
+      act(() => {
+        result.current.logActivity('sleep', { status: 'start' });
+      });
+
+      // Switch back to baby A
+      (useFamilyStore.getState as jest.Mock).mockReturnValue({
+        currentBabyId: 'baby-a',
+      });
+
+      const todayActivities = result.current.getTodayActivities();
+      expect(todayActivities).toHaveLength(2);
+      expect(todayActivities.every(a => a.baby_id === 'baby-a')).toBe(true);
+    });
+
+    it('should handle baby switching correctly', () => {
+      const { result } = renderHook(() => useActivityStore());
+
+      // Start with baby A
+      (useFamilyStore.getState as jest.Mock).mockReturnValue({
+        currentBabyId: 'baby-a',
+      });
+
+      act(() => {
+        result.current.logActivity('feed', { method: 'breast' });
+      });
+
+      // Switch to baby B
+      (useFamilyStore.getState as jest.Mock).mockReturnValue({
+        currentBabyId: 'baby-b',
+      });
+
+      // Baby B should have no activities
+      expect(result.current.getLastActivity('feed')).toBeNull();
+      expect(result.current.getTodayActivities()).toEqual([]);
+
+      // Log activity for baby B
+      act(() => {
+        result.current.logActivity('feed', { method: 'bottle' });
+      });
+
+      // Now baby B should have one activity
+      expect(result.current.getLastActivity('feed')?.baby_id).toBe('baby-b');
+      expect(result.current.getTodayActivities()).toHaveLength(1);
+    });
+  });
+
+  describe('edge cases', () => {
+    it('should throw error when logging activity with no baby selected', () => {
+      const { result } = renderHook(() => useActivityStore());
+
+      // Mock no baby selected
+      (useFamilyStore.getState as jest.Mock).mockReturnValue({
+        currentBabyId: null,
+      });
+
+      expect(() => {
+        act(() => {
+          result.current.logActivity('feed', { method: 'breast' });
+        });
+      }).toThrow('No baby selected. Please select a baby first.');
+    });
+
+    it('should return null from getLastActivity when no baby selected', () => {
+      const { result } = renderHook(() => useActivityStore());
+
+      // Mock no baby selected
+      (useFamilyStore.getState as jest.Mock).mockReturnValue({
+        currentBabyId: null,
+      });
+
+      expect(result.current.getLastActivity('feed')).toBeNull();
+    });
+
+    it('should return empty array from getTodayActivities when no baby selected', () => {
+      const { result } = renderHook(() => useActivityStore());
+
+      // Mock no baby selected
+      (useFamilyStore.getState as jest.Mock).mockReturnValue({
+        currentBabyId: null,
+      });
+
+      expect(result.current.getTodayActivities()).toEqual([]);
+    });
+
+    it('should gracefully handle activities with unknown baby_id', () => {
+      const { result } = renderHook(() => useActivityStore());
+
+      // Mock baby A selected
+      (useFamilyStore.getState as jest.Mock).mockReturnValue({
+        currentBabyId: 'baby-a',
+      });
+
+      // Manually add activity with unknown baby_id
+      act(() => {
+        const unknownBabyActivity = {
+          id: 'unknown-123',
+          type: 'feed' as const,
+          timestamp: new Date().toISOString(),
+          baby_id: 'unknown-baby-id',
+          created_by: 'migration',
+          details: { method: 'breast' as const },
+          synced: true,
+        };
+        result.current.activities.push(unknownBabyActivity);
+      });
+
+      // Should not appear in filtered results
+      expect(result.current.getLastActivity('feed')).toBeNull();
+      expect(result.current.getTodayActivities()).toEqual([]);
+
+      // But activity should still be in store (data integrity)
+      expect(result.current.activities).toHaveLength(1);
+    });
+  });
+
   describe('deleteActivity', () => {
     it('should remove activity from store', async () => {
       const { result } = renderHook(() => useActivityStore());
