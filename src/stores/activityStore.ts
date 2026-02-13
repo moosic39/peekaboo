@@ -47,6 +47,13 @@ export const useActivityStore = create<ActivityStore>()(
        * - Syncs to Supabase in background (non-blocking)
        */
       logActivity: (type: ActivityType, details: ActivityDetails) => {
+        const currentBabyId = getCurrentBabyId();
+
+        // Defensive: shouldn't happen due to onboarding, but be safe
+        if (!currentBabyId) {
+          throw new Error('No baby selected. Please select a baby first.');
+        }
+
         // Generate unique ID: timestamp + random suffix
         const id = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
@@ -54,7 +61,7 @@ export const useActivityStore = create<ActivityStore>()(
           id,
           type,
           timestamp: new Date().toISOString(),
-          baby_id: get().currentBabyId,
+          baby_id: currentBabyId,
           created_by: 'local',
           details,
           synced: false,
@@ -78,7 +85,12 @@ export const useActivityStore = create<ActivityStore>()(
        * Returns null if no activities of that type exist
        */
       getLastActivity: (type: ActivityType) => {
-        const filtered = get().activities.filter((a) => a.type === type);
+        const currentBabyId = getCurrentBabyId();
+        if (!currentBabyId) return null; // Safety check
+
+        const filtered = get().activities.filter(
+          (a) => a.type === type && a.baby_id === currentBabyId
+        );
         return filtered.length > 0 ? filtered[0] : null;
       },
 
@@ -87,11 +99,16 @@ export const useActivityStore = create<ActivityStore>()(
        * Filters by date (midnight to now)
        */
       getTodayActivities: () => {
+        const currentBabyId = getCurrentBabyId();
+        if (!currentBabyId) return []; // Safety check
+
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const todayISO = today.toISOString();
 
-        return get().activities.filter((a) => a.timestamp >= todayISO);
+        return get().activities.filter(
+          (a) => a.timestamp >= todayISO && a.baby_id === currentBabyId
+        );
       },
 
       /**
