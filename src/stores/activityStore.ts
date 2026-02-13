@@ -7,7 +7,6 @@ import { syncActivity, deleteActivity as deleteSyncActivity } from '@/lib/sync';
 interface ActivityStore {
   // State
   activities: Activity[];
-  currentBabyId: string;
 
   // Actions
   logActivity: (type: ActivityType, details: ActivityDetails) => Activity;
@@ -31,8 +30,6 @@ export const useActivityStore = create<ActivityStore>()(
     (set, get) => ({
       // Initial state
       activities: [],
-      // DEVELOPMENT: Using test baby ID - update once auth is implemented
-      currentBabyId: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
 
       /**
        * Log a new activity
@@ -113,7 +110,7 @@ export const useActivityStore = create<ActivityStore>()(
        * Reset store to initial state
        * Used for testing and future logout functionality
        */
-      reset: () => set({ activities: [], currentBabyId: 'default' }),
+      reset: () => set({ activities: [] }),
     }),
     {
       name: '@peekaboo:activities',
