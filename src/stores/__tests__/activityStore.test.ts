@@ -9,8 +9,16 @@ jest.mock('@/lib/sync', () => ({
   fetchActivities: jest.fn(),
   subscribeToActivities: jest.fn(),
 }));
+jest.mock('../familyStore', () => ({
+  useFamilyStore: {
+    getState: jest.fn(() => ({
+      currentBabyId: 'test-baby-123',
+    })),
+  },
+}));
 
 import { useActivityStore } from '../activityStore';
+import { useFamilyStore } from '../familyStore';
 import * as syncService from '@/lib/sync';
 
 describe('activityStore', () => {
@@ -36,7 +44,7 @@ describe('activityStore', () => {
       const { result } = renderHook(() => useActivityStore());
 
       expect(result.current.activities).toEqual([]);
-      expect(result.current.currentBabyId).toBe('default');
+      // currentBabyId removed from store state
     });
   });
 
@@ -53,7 +61,7 @@ describe('activityStore', () => {
         id: expect.stringMatching(/^\d+-[a-z0-9]+$/),
         type: 'feed',
         timestamp: expect.any(String),
-        baby_id: 'default',
+        baby_id: 'test-baby-123',
         created_by: 'local',
         details: { method: 'breast' },
         synced: false,
@@ -191,7 +199,7 @@ describe('activityStore', () => {
           id: 'old-123',
           type: 'feed' as const,
           timestamp: yesterday.toISOString(),
-          baby_id: 'default',
+          baby_id: 'test-baby-123',
           created_by: 'local',
           details: { method: 'bottle' as const },
           synced: true,
@@ -258,7 +266,7 @@ describe('activityStore', () => {
   });
 
   describe('reset', () => {
-    it('should clear all activities and reset baby ID', () => {
+    it('should clear all activities', () => {
       const { result } = renderHook(() => useActivityStore());
 
       act(() => {
@@ -274,7 +282,7 @@ describe('activityStore', () => {
       });
 
       expect(result.current.activities).toEqual([]);
-      expect(result.current.currentBabyId).toBe('default');
+      // currentBabyId no longer part of state
     });
   });
 
