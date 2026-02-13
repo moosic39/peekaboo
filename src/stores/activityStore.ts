@@ -3,6 +3,15 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { platformStorage } from '@/lib/storage';
 import { Activity, ActivityType, ActivityDetails } from '@/types';
 import { syncActivity, deleteActivity as deleteSyncActivity } from '@/lib/sync';
+import { useFamilyStore } from './familyStore';
+
+/**
+ * Get current baby ID from familyStore
+ * Returns null if no baby selected
+ */
+const getCurrentBabyId = (): string | null => {
+  return useFamilyStore.getState().currentBabyId;
+};
 
 interface ActivityStore {
   // State
