@@ -183,6 +183,9 @@ CREATE POLICY "Users can update their families" ON families
     )
   );
 
+CREATE POLICY "Users can create families" ON families
+  FOR INSERT WITH CHECK (true);
+
 -- Babies policies
 CREATE POLICY "Users can view babies in their families" ON babies
   FOR SELECT USING (
@@ -269,6 +272,17 @@ CREATE POLICY "Users can view their family memberships" ON family_members
   FOR SELECT USING (
     user_id = auth.uid() OR
     user_is_in_family(family_id)
+  );
+
+CREATE POLICY "Users can add themselves to families" ON family_members
+  FOR INSERT WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "Admins can remove family members" ON family_members
+  FOR DELETE USING (
+    family_id IN (
+      SELECT family_id FROM family_members
+      WHERE user_id = auth.uid() AND role = 'admin'
+    )
   );
 
 -- ====================================================================
