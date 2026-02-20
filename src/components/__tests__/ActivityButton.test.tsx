@@ -180,4 +180,17 @@ describe('ActivityButton', () => {
     );
     expect(getByText('—')).toBeTruthy();
   });
+
+  it('renders — when timeAgo is an empty string', () => {
+    const { getByText } = render(
+      <ActivityButton
+        type="feed"
+        onPress={mockOnPress}
+        label="Feed"
+        icon="🍼"
+        timeAgo=""
+      />
+    );
+    expect(getByText('—')).toBeTruthy();
+  });
 });

@@ -46,7 +46,7 @@ export const ActivityButton: React.FC<ActivityButtonProps> = ({
       <View style={styles.content}>
         <Text style={styles.icon}>{icon}</Text>
         <Text style={styles.label}>{label}</Text>
-        <Text style={styles.timeAgo}>{timeAgo ?? '—'}</Text>
+        <Text style={styles.timeAgo}>{timeAgo || '—'}</Text>
       </View>
     </TouchableOpacity>
   );
