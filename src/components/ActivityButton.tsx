@@ -1,7 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
 import { ActivityType } from '@/types';
-import { activityColors } from '@/constants/colors';
+import { activityColors, activityColorsBg, activityColorsBorder } from '@/constants/colors';
 
 export interface ActivityButtonProps {
   type: ActivityType;
@@ -12,7 +12,7 @@ export interface ActivityButtonProps {
 
 /**
  * Large, tappable button for logging activities
- * Optimized for one-handed use with clear visual distinction
+ * Dark glass design with color-matched glow border
  */
 export const ActivityButton: React.FC<ActivityButtonProps> = ({
   type,
@@ -20,13 +20,22 @@ export const ActivityButton: React.FC<ActivityButtonProps> = ({
   label,
   icon,
 }) => {
-  const backgroundColor = activityColors[type];
+  const glowColor = activityColors[type];
+  const bgColor = activityColorsBg[type];
+  const borderColor = activityColorsBorder[type];
 
   return (
     <TouchableOpacity
-      style={[styles.button, { backgroundColor }]}
+      style={[
+        styles.button,
+        {
+          backgroundColor: bgColor,
+          borderColor: borderColor,
+          shadowColor: glowColor,
+        },
+      ]}
       onPress={onPress}
-      activeOpacity={0.7}
+      activeOpacity={0.75}
       accessibilityLabel={`Log ${label} activity`}
       accessibilityHint={`Tap to record a ${label} activity`}
       accessibilityRole="button"
@@ -41,29 +50,30 @@ export const ActivityButton: React.FC<ActivityButtonProps> = ({
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 20,
-    minHeight: 100,
+    minHeight: 110,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderWidth: 1,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.45,
+    shadowRadius: 14,
+    elevation: 8,
   },
   content: {
     alignItems: 'center',
     justifyContent: 'center',
   },
   icon: {
-    fontSize: 40,
-    marginBottom: 8,
+    fontSize: 38,
+    marginBottom: 10,
   },
   label: {
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: '#F2F2F7',
     textAlign: 'center',
+    letterSpacing: 0.3,
   },
 });

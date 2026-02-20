@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { format } from 'date-fns';
 import { Activity } from '@/types';
-import { activityColors, colors } from '@/constants/colors';
+import { activityColors, activityColorsBg, activityColorsBorder, colors } from '@/constants/colors';
 import { ACTIVITY_ICONS, ACTIVITY_LABELS } from '@/constants/activities';
 import type {
   FeedDetails,
@@ -40,14 +40,14 @@ const formatActivityDetails = (activity: Activity): string => {
         parts.push(`${feedDetails.duration}min`);
       }
 
-      return parts.join(' • ');
+      return parts.join(' · ');
     }
 
     case 'diaper': {
       const diaperDetails = details as DiaperDetails;
       if (!diaperDetails.type) return '';
       const type = diaperDetails.type.charAt(0).toUpperCase() + diaperDetails.type.slice(1);
-      return diaperDetails.notes ? `${type} • ${diaperDetails.notes}` : type;
+      return diaperDetails.notes ? `${type} · ${diaperDetails.notes}` : type;
     }
 
     case 'sleep': {
@@ -55,7 +55,7 @@ const formatActivityDetails = (activity: Activity): string => {
       if (!sleepDetails.status) return '';
       const status = sleepDetails.status === 'start' ? 'Started' : 'Ended';
       return sleepDetails.duration
-        ? `${status} • ${sleepDetails.duration}min`
+        ? `${status} · ${sleepDetails.duration}min`
         : status;
     }
 
@@ -72,7 +72,7 @@ const formatActivityDetails = (activity: Activity): string => {
         parts.push(`${pumpDetails.duration}min`);
       }
 
-      return parts.join(' • ');
+      return parts.join(' · ');
     }
 
     case 'growth': {
@@ -89,7 +89,7 @@ const formatActivityDetails = (activity: Activity): string => {
         parts.push(`Head: ${growthDetails.headCircumference}cm`);
       }
 
-      return parts.length > 0 ? parts.join(' • ') : 'Measured';
+      return parts.length > 0 ? parts.join(' · ') : 'Measured';
     }
 
     default:
@@ -99,13 +99,15 @@ const formatActivityDetails = (activity: Activity): string => {
 
 /**
  * Timeline item showing a single activity log entry
- * Supports long press for deletion
+ * Glass card with colored icon and glow
  */
 export const TimelineItem: React.FC<TimelineItemProps> = ({
   activity,
   onLongPress,
 }) => {
   const accentColor = activityColors[activity.type];
+  const bgColor = activityColorsBg[activity.type];
+  const borderColor = activityColorsBorder[activity.type];
   const icon = ACTIVITY_ICONS[activity.type];
   const label = ACTIVITY_LABELS[activity.type];
   const formattedTime = format(new Date(activity.timestamp), 'h:mm a');
@@ -124,7 +126,7 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
       accessibilityRole="button"
     >
       <View
-        style={[styles.iconContainer, { backgroundColor: accentColor }]}
+        style={[styles.iconContainer, { backgroundColor: bgColor, borderColor, shadowColor: accentColor }]}
         testID="icon-container"
       >
         <Text style={styles.icon}>{icon}</Text>
@@ -147,27 +149,29 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    backgroundColor: colors.background,
-    borderRadius: 12,
-    padding: 12,
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderRadius: 14,
+    padding: 14,
     marginBottom: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: colors.surfaceBorder,
   },
   pressed: {
-    opacity: 0.7,
-    backgroundColor: colors.surface,
+    opacity: 0.65,
   },
   iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 14,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.45,
+    shadowRadius: 8,
+    elevation: 4,
   },
   icon: {
     fontSize: 20,
@@ -180,19 +184,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 3,
   },
   label: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
     color: colors.text,
   },
   time: {
-    fontSize: 14,
+    fontSize: 13,
     color: colors.textSecondary,
+    fontWeight: '500',
   },
   details: {
-    fontSize: 14,
+    fontSize: 13,
     color: colors.textLight,
   },
 });

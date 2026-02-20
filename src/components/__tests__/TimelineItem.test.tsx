@@ -2,6 +2,7 @@ import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { TimelineItem } from '../TimelineItem';
 import { Activity, ActivityType } from '@/types';
+import { activityColorsBg, activityColorsBorder, activityColors } from '@/constants/colors';
 import type {
   FeedDetails,
   DiaperDetails,
@@ -48,7 +49,7 @@ describe('TimelineItem', () => {
       expect(getByText('🍼')).toBeTruthy();
       expect(getByText('Feed')).toBeTruthy();
       expect(getByText('10:30 AM')).toBeTruthy();
-      expect(getByText('Breast • Left • 15min')).toBeTruthy();
+      expect(getByText('Breast · Left · 15min')).toBeTruthy();
     });
 
     it('renders diaper activity with correct details', () => {
@@ -62,7 +63,7 @@ describe('TimelineItem', () => {
 
       expect(getByText('🧷')).toBeTruthy();
       expect(getByText('Diaper')).toBeTruthy();
-      expect(getByText('Wet • Changed in nursery')).toBeTruthy();
+      expect(getByText('Wet · Changed in nursery')).toBeTruthy();
     });
 
     it('renders sleep activity with correct details', () => {
@@ -90,7 +91,7 @@ describe('TimelineItem', () => {
 
       expect(getByText('🍶')).toBeTruthy();
       expect(getByText('Pump')).toBeTruthy();
-      expect(getByText('Both • 120ml • 20min')).toBeTruthy();
+      expect(getByText('Both · 120ml · 20min')).toBeTruthy();
     });
 
     it('renders growth activity with correct details', () => {
@@ -105,7 +106,7 @@ describe('TimelineItem', () => {
 
       expect(getByText('📏')).toBeTruthy();
       expect(getByText('Growth')).toBeTruthy();
-      expect(getByText('4.5kg • 55cm • Head: 38cm')).toBeTruthy();
+      expect(getByText('4.5kg · 55cm · Head: 38cm')).toBeTruthy();
     });
   });
 
@@ -119,7 +120,7 @@ describe('TimelineItem', () => {
       const activity = createMockActivity('feed', feedDetails);
       const { getByText } = render(<TimelineItem activity={activity} />);
 
-      expect(getByText('Bottle • 150ml')).toBeTruthy();
+      expect(getByText('Bottle · 150ml')).toBeTruthy();
     });
 
     it('formats feed with both method', () => {
@@ -131,7 +132,7 @@ describe('TimelineItem', () => {
       const activity = createMockActivity('feed', feedDetails);
       const { getByText } = render(<TimelineItem activity={activity} />);
 
-      expect(getByText('Both • 25min')).toBeTruthy();
+      expect(getByText('Both · 25min')).toBeTruthy();
     });
 
     it('formats diaper without notes', () => {
@@ -165,7 +166,7 @@ describe('TimelineItem', () => {
       const activity = createMockActivity('sleep', sleepDetails);
       const { getByText } = render(<TimelineItem activity={activity} />);
 
-      expect(getByText('Ended • 120min')).toBeTruthy();
+      expect(getByText('Ended · 120min')).toBeTruthy();
     });
 
     it('formats pump with only side', () => {
@@ -188,7 +189,7 @@ describe('TimelineItem', () => {
       const activity = createMockActivity('pump', pumpDetails);
       const { getByText } = render(<TimelineItem activity={activity} />);
 
-      expect(getByText('Right • 80ml')).toBeTruthy();
+      expect(getByText('Right · 80ml')).toBeTruthy();
     });
 
     it('formats growth with only weight', () => {
@@ -211,7 +212,7 @@ describe('TimelineItem', () => {
       const activity = createMockActivity('growth', growthDetails);
       const { getByText } = render(<TimelineItem activity={activity} />);
 
-      expect(getByText('5.2kg • 60cm')).toBeTruthy();
+      expect(getByText('5.2kg · 60cm')).toBeTruthy();
     });
 
     it('handles growth with no measurements', () => {
@@ -273,7 +274,7 @@ describe('TimelineItem', () => {
   });
 
   describe('Color Application', () => {
-    it('applies correct background color for feed activity', () => {
+    it('applies correct glow colors for feed activity', () => {
       const feedDetails: FeedDetails = { method: 'breast' };
       const activity = createMockActivity('feed', feedDetails);
 
@@ -283,26 +284,24 @@ describe('TimelineItem', () => {
       expect(iconContainer.props.style).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
-            backgroundColor: '#4A90D9', // feed color
+            backgroundColor: activityColorsBg.feed,
+            borderColor: activityColorsBorder.feed,
+            shadowColor: activityColors.feed,
           }),
         ])
       );
     });
 
-    it('applies correct background color for each activity type', () => {
-      const testCases: Array<{
-        type: ActivityType;
-        color: string;
-        details: any;
-      }> = [
-        { type: 'feed', color: '#4A90D9', details: { method: 'breast' } },
-        { type: 'diaper', color: '#F5C842', details: { type: 'wet' } },
-        { type: 'sleep', color: '#9B6BC2', details: { status: 'start' } },
-        { type: 'pump', color: '#E891B0', details: { side: 'left' } },
-        { type: 'growth', color: '#5CB85C', details: { weight: 5.0 } },
+    it('applies correct glow colors for each activity type', () => {
+      const testCases: Array<{ type: ActivityType; details: any }> = [
+        { type: 'feed', details: { method: 'breast' } },
+        { type: 'diaper', details: { type: 'wet' } },
+        { type: 'sleep', details: { status: 'start' } },
+        { type: 'pump', details: { side: 'left' } },
+        { type: 'growth', details: { weight: 5.0 } },
       ];
 
-      testCases.forEach(({ type, color, details }) => {
+      testCases.forEach(({ type, details }) => {
         const activity = createMockActivity(type, details);
         const { getByTestId } = render(<TimelineItem activity={activity} />);
         const iconContainer = getByTestId('icon-container');
@@ -310,7 +309,9 @@ describe('TimelineItem', () => {
         expect(iconContainer.props.style).toEqual(
           expect.arrayContaining([
             expect.objectContaining({
-              backgroundColor: color,
+              backgroundColor: activityColorsBg[type],
+              borderColor: activityColorsBorder[type],
+              shadowColor: activityColors[type],
             }),
           ])
         );

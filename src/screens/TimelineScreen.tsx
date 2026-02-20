@@ -20,7 +20,6 @@ interface ActivitySection {
 function groupActivitiesByDate(activities: Activity[]): ActivitySection[] {
   const groups = new Map<string, Activity[]>();
 
-  // Group activities by date
   activities.forEach((activity) => {
     const dateKey = format(startOfDay(new Date(activity.timestamp)), 'yyyy-MM-dd');
     if (!groups.has(dateKey)) {
@@ -29,7 +28,6 @@ function groupActivitiesByDate(activities: Activity[]): ActivitySection[] {
     groups.get(dateKey)!.push(activity);
   });
 
-  // Convert to sections with formatted titles
   const sections = Array.from(groups.entries()).map(([dateKey, data]) => {
     const date = new Date(dateKey);
     let title: string;
@@ -42,13 +40,11 @@ function groupActivitiesByDate(activities: Activity[]): ActivitySection[] {
       title = format(date, 'EEEE, MMMM d');
     }
 
-    // Sort activities within section by timestamp (newest first)
     data.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
     return { title, data };
   });
 
-  // Sort sections by date (newest first)
   sections.sort((a, b) => {
     const dateA = new Date(a.data[0].timestamp);
     const dateB = new Date(b.data[0].timestamp);
@@ -78,14 +74,20 @@ export default function TimelineScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Timeline</Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>Timeline</Text>
+        <Text style={styles.subtitle}>Activity history</Text>
+      </View>
       {sections.length === 0 ? (
         <EmptyState />
       ) : (
         <SectionList
           sections={sections}
           renderSectionHeader={({ section }) => (
-            <Text style={styles.dateHeader}>{section.title}</Text>
+            <View style={styles.dateHeaderRow}>
+              <Text style={styles.dateHeader}>{section.title}</Text>
+              <View style={styles.dateDivider} />
+            </View>
           )}
           renderItem={({ item }) => (
             <TimelineItem
@@ -107,24 +109,45 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
+    fontSize: 30,
+    fontWeight: '700',
     color: colors.text,
-    marginHorizontal: 20,
-    marginTop: 20,
-    marginBottom: 16,
+    letterSpacing: -0.5,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginTop: 4,
+    letterSpacing: 0.2,
   },
   listContent: {
     paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingBottom: 24,
+  },
+  dateHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 24,
+    marginBottom: 12,
+    gap: 12,
   },
   dateHeader: {
-    fontSize: 18,
+    fontSize: 13,
     fontWeight: '600',
-    color: colors.text,
-    marginTop: 20,
-    marginBottom: 12,
+    color: colors.textSecondary,
+    letterSpacing: 1.0,
+    textTransform: 'uppercase',
+  },
+  dateDivider: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.border,
   },
   emptyState: {
     flex: 1,
@@ -133,8 +156,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
   emptyIcon: {
-    fontSize: 64,
+    fontSize: 56,
     marginBottom: 16,
+    opacity: 0.4,
   },
   emptyTitle: {
     fontSize: 20,
@@ -143,7 +167,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   emptySubtitle: {
-    fontSize: 16,
+    fontSize: 15,
     color: colors.textSecondary,
     textAlign: 'center',
   },

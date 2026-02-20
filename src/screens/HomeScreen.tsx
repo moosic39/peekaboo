@@ -15,27 +15,10 @@ import { useActivityStore } from '@/stores/activityStore';
 import { useFamilyStore } from '@/stores/familyStore';
 import { ActivityType, ActivityDetails } from '@/types';
 import { colors } from '@/constants/colors';
+import { ACTIVITY_ICONS, ACTIVITY_LABELS } from '@/constants/activities';
 
 // Activity types in display order
 const ACTIVITY_TYPES: ActivityType[] = ['feed', 'diaper', 'sleep', 'pump', 'growth'];
-
-// Activity labels for display
-const ACTIVITY_LABELS: Record<ActivityType, string> = {
-  feed: 'Feed',
-  diaper: 'Diaper',
-  sleep: 'Sleep',
-  pump: 'Pump',
-  growth: 'Growth',
-};
-
-// Activity icons (emoji)
-const ACTIVITY_ICONS: Record<ActivityType, string> = {
-  feed: '🍼',
-  diaper: '👶',
-  sleep: '😴',
-  pump: '🍼',
-  growth: '📏',
-};
 
 /**
  * HomeScreen - Main activity logging interface
@@ -53,7 +36,6 @@ export default function HomeScreen() {
 
   /**
    * Compute last activities for each type, filtered to the selected baby
-   * Memoized to prevent re-computation on every render
    */
   const lastActivities = useMemo(() => {
     const result: Record<ActivityType, typeof activities[0] | null> = {
@@ -74,17 +56,10 @@ export default function HomeScreen() {
     return result;
   }, [activities, currentBabyId]);
 
-  /**
-   * Handle activity button press - opens bottom sheet
-   */
   const handleActivityPress = useCallback((type: ActivityType) => {
     setSelectedType(type);
   }, []);
 
-  /**
-   * Handle option selection from bottom sheet
-   * Maps option value to typed details and logs activity
-   */
   const handleOptionSelect = useCallback(
     (value: string) => {
       if (!selectedType) return;
@@ -101,9 +76,6 @@ export default function HomeScreen() {
     [selectedType, logActivity]
   );
 
-  /**
-   * Handle sheet close without selection
-   */
   const handleSheetClose = useCallback(() => {
     setSelectedType(null);
   }, []);
@@ -113,7 +85,10 @@ export default function HomeScreen() {
       <SafeAreaView style={styles.safeArea}>
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
           {/* Header */}
-          <Text style={styles.title}>Log Activity</Text>
+          <View style={styles.header}>
+            <Text style={styles.title}>Log Activity</Text>
+            <Text style={styles.subtitle}>Tap to record</Text>
+          </View>
 
           {/* Activity Buttons Grid */}
           <View style={styles.buttonGrid}>
@@ -130,7 +105,7 @@ export default function HomeScreen() {
           </View>
 
           {/* Recent Activities Section */}
-          <Text style={styles.sectionTitle}>Recent Activities</Text>
+          <Text style={styles.sectionTitle}>Recent</Text>
 
           {/* Last Activity Cards or Empty States */}
           <View style={styles.cardsContainer}>
@@ -147,7 +122,6 @@ export default function HomeScreen() {
                 );
               }
 
-              // Empty state
               return (
                 <View key={type} style={styles.emptyCard}>
                   <Text style={styles.emptyIcon}>{ACTIVITY_ICONS[type]}</Text>
@@ -174,7 +148,6 @@ export default function HomeScreen() {
 
 /**
  * Map option value to typed activity details
- * Ensures type safety for all activity types
  */
 function mapOptionToDetails(type: ActivityType, value: string): ActivityDetails {
   switch (type) {
@@ -187,10 +160,8 @@ function mapOptionToDetails(type: ActivityType, value: string): ActivityDetails 
     case 'pump':
       return { side: value as 'left' | 'right' | 'both' };
     case 'growth':
-      // TODO: Prompt for numeric input instead of placeholder
       return { weight: 0 };
     default:
-      // TypeScript exhaustiveness check
       const _exhaustive: never = type;
       throw new Error(`Unhandled activity type: ${_exhaustive}`);
   }
@@ -199,7 +170,7 @@ function mapOptionToDetails(type: ActivityType, value: string): ActivityDetails 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.background,
   },
   safeArea: {
     flex: 1,
@@ -208,47 +179,62 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: 16,
-    paddingBottom: 32,
+    padding: 20,
+    paddingBottom: 36,
+  },
+  header: {
+    marginBottom: 28,
+    marginTop: 4,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 24,
-    color: '#333',
+    fontSize: 30,
+    fontWeight: '700',
+    color: colors.text,
+    letterSpacing: -0.5,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginTop: 4,
+    letterSpacing: 0.2,
   },
   buttonGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginHorizontal: -8,
-    marginBottom: 32,
+    marginHorizontal: -6,
+    marginBottom: 36,
   },
   buttonWrapper: {
     width: '50%',
-    padding: 8,
+    padding: 6,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 13,
     fontWeight: '600',
-    marginBottom: 16,
-    color: '#333',
+    color: colors.textSecondary,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    marginBottom: 14,
   },
   cardsContainer: {
-    gap: 12,
+    gap: 10,
   },
   emptyCard: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: colors.surface,
+    borderRadius: 14,
+    padding: 14,
     flexDirection: 'row',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
     gap: 12,
   },
   emptyIcon: {
-    fontSize: 24,
+    fontSize: 22,
+    opacity: 0.4,
   },
   emptyText: {
-    fontSize: 16,
-    color: '#999',
+    fontSize: 14,
+    color: colors.textLight,
   },
 });

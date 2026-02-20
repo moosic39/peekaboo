@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { subDays, startOfDay } from 'date-fns';
 import { useActivityStore } from '@/stores/activityStore';
 import { Activity, ActivityType } from '@/types';
-import { colors } from '@/constants/colors';
+import { colors, activityColors, activityColorsBg, activityColorsBorder } from '@/constants/colors';
 
 interface ActivityStats {
   feed: number;
@@ -53,14 +53,20 @@ interface StatCardProps {
   label: string;
   count: number;
   subtitle?: string;
-  color: string;
+  type: ActivityType;
 }
 
-function StatCard({ icon, label, count, subtitle, color }: StatCardProps) {
+function StatCard({ icon, label, count, subtitle, type }: StatCardProps) {
+  const accentColor = activityColors[type];
+  const bgColor = activityColorsBg[type];
+  const borderColor = activityColorsBorder[type];
+
   return (
-    <View style={[styles.statCard, { borderLeftColor: color }]}>
-      <Text style={styles.statIcon}>{icon}</Text>
-      <Text style={styles.statCount}>{count}</Text>
+    <View style={[styles.statCard, { backgroundColor: bgColor, borderColor }]}>
+      <View style={styles.statCardTop}>
+        <Text style={styles.statIcon}>{icon}</Text>
+        <Text style={[styles.statCount, { color: accentColor }]}>{count}</Text>
+      </View>
       <Text style={styles.statLabel}>{label}</Text>
       {subtitle && <Text style={styles.statSubtitle}>{subtitle}</Text>}
     </View>
@@ -79,64 +85,25 @@ export default function StatsScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.title}>Statistics</Text>
-
-        <Text style={styles.sectionTitle}>Today</Text>
-        <View style={styles.statsGrid}>
-          <StatCard
-            icon="🍼"
-            label="Feeds"
-            count={todayStats.feed}
-            color={colors.feed}
-          />
-          <StatCard
-            icon="🧷"
-            label="Diapers"
-            count={todayStats.diaper}
-            color={colors.diaper}
-          />
-          <StatCard
-            icon="😴"
-            label="Sleep"
-            count={todayStats.sleep}
-            subtitle={todaySleepDuration}
-            color={colors.sleep}
-          />
-          <StatCard
-            icon="🍶"
-            label="Pumps"
-            count={todayStats.pump}
-            color={colors.pump}
-          />
+        <View style={styles.header}>
+          <Text style={styles.title}>Statistics</Text>
+          <Text style={styles.subtitle}>Your baby's activity summary</Text>
         </View>
 
-        <Text style={styles.sectionTitle}>This Week</Text>
+        <Text style={styles.sectionLabel}>Today</Text>
         <View style={styles.statsGrid}>
-          <StatCard
-            icon="🍼"
-            label="Feeds"
-            count={weekStats.feed}
-            color={colors.feed}
-          />
-          <StatCard
-            icon="🧷"
-            label="Diapers"
-            count={weekStats.diaper}
-            color={colors.diaper}
-          />
-          <StatCard
-            icon="😴"
-            label="Sleep"
-            count={weekStats.sleep}
-            subtitle={weekSleepDuration}
-            color={colors.sleep}
-          />
-          <StatCard
-            icon="🍶"
-            label="Pumps"
-            count={weekStats.pump}
-            color={colors.pump}
-          />
+          <StatCard icon="🍼" label="Feeds" count={todayStats.feed} type="feed" />
+          <StatCard icon="🧷" label="Diapers" count={todayStats.diaper} type="diaper" />
+          <StatCard icon="😴" label="Sleep" count={todayStats.sleep} subtitle={todaySleepDuration} type="sleep" />
+          <StatCard icon="🍶" label="Pumps" count={todayStats.pump} type="pump" />
+        </View>
+
+        <Text style={styles.sectionLabel}>This Week</Text>
+        <View style={styles.statsGrid}>
+          <StatCard icon="🍼" label="Feeds" count={weekStats.feed} type="feed" />
+          <StatCard icon="🧷" label="Diapers" count={weekStats.diaper} type="diaper" />
+          <StatCard icon="😴" label="Sleep" count={weekStats.sleep} subtitle={weekSleepDuration} type="sleep" />
+          <StatCard icon="🍶" label="Pumps" count={weekStats.pump} type="pump" />
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -150,57 +117,67 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingBottom: 24,
+  },
+  header: {
+    paddingTop: 16,
+    marginBottom: 28,
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
+    fontSize: 30,
+    fontWeight: '700',
     color: colors.text,
-    marginTop: 20,
-    marginBottom: 16,
+    letterSpacing: -0.5,
   },
-  sectionTitle: {
-    fontSize: 20,
+  subtitle: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginTop: 4,
+    letterSpacing: 0.2,
+  },
+  sectionLabel: {
+    fontSize: 13,
     fontWeight: '600',
-    color: colors.text,
-    marginTop: 24,
-    marginBottom: 12,
+    color: colors.textSecondary,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    marginBottom: 14,
+    marginTop: 4,
   },
   statsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 12,
+    marginBottom: 32,
   },
   statCard: {
-    width: '48%',
-    backgroundColor: colors.background,
-    borderRadius: 12,
-    borderLeftWidth: 4,
+    width: '47%',
+    borderRadius: 16,
+    borderWidth: 1,
     padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+  },
+  statCardTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 10,
   },
   statIcon: {
-    fontSize: 32,
-    marginBottom: 8,
+    fontSize: 28,
   },
   statCount: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: colors.text,
-    marginBottom: 4,
+    fontSize: 32,
+    fontWeight: '700',
+    letterSpacing: -1,
   },
   statLabel: {
     fontSize: 14,
-    color: colors.textSecondary,
-    fontWeight: '500',
+    fontWeight: '600',
+    color: colors.text,
   },
   statSubtitle: {
     fontSize: 12,
     color: colors.textSecondary,
-    marginTop: 4,
+    marginTop: 3,
   },
 });

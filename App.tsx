@@ -91,8 +91,8 @@ function MainNavigator() {
         tabBarActiveTintColor: colors.text,
         tabBarInactiveTintColor: colors.textSecondary,
         tabBarStyle: {
-          backgroundColor: colors.background,
-          borderTopColor: colors.border,
+          backgroundColor: '#0D0D1A',
+          borderTopColor: 'rgba(255, 255, 255, 0.10)',
           borderTopWidth: 1,
           height: 60,
           paddingBottom: 8,
@@ -221,7 +221,7 @@ export default function App() {
       ) : (
         <MainNavigator />
       )}
-      <StatusBar style="auto" />
+      <StatusBar style="light" />
     </NavigationContainer>
   );
 }

@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react-native';
 import { ActivityButton } from '../ActivityButton';
-import { activityColors } from '@/constants/colors';
+import { activityColors, activityColorsBg, activityColorsBorder } from '@/constants/colors';
 
 describe('ActivityButton', () => {
   const mockOnPress = jest.fn();
@@ -50,7 +50,7 @@ describe('ActivityButton', () => {
     expect(mockOnPress).toHaveBeenCalledTimes(1);
   });
 
-  it('applies correct background color for feed type', () => {
+  it('applies correct glow color for feed type', () => {
     const { getByLabelText } = render(
       <ActivityButton
         type="feed"
@@ -62,11 +62,13 @@ describe('ActivityButton', () => {
 
     const button = getByLabelText('Log Feeding activity');
     expect(button.props.style).toMatchObject({
-      backgroundColor: activityColors.feed,
+      backgroundColor: activityColorsBg.feed,
+      borderColor: activityColorsBorder.feed,
+      shadowColor: activityColors.feed,
     });
   });
 
-  it('applies correct background color for diaper type', () => {
+  it('applies correct glow color for diaper type', () => {
     const { getByLabelText } = render(
       <ActivityButton
         type="diaper"
@@ -78,11 +80,13 @@ describe('ActivityButton', () => {
 
     const button = getByLabelText('Log Diaper activity');
     expect(button.props.style).toMatchObject({
-      backgroundColor: activityColors.diaper,
+      backgroundColor: activityColorsBg.diaper,
+      borderColor: activityColorsBorder.diaper,
+      shadowColor: activityColors.diaper,
     });
   });
 
-  it('applies correct background color for sleep type', () => {
+  it('applies correct glow color for sleep type', () => {
     const { getByLabelText } = render(
       <ActivityButton
         type="sleep"
@@ -94,11 +98,13 @@ describe('ActivityButton', () => {
 
     const button = getByLabelText('Log Sleep activity');
     expect(button.props.style).toMatchObject({
-      backgroundColor: activityColors.sleep,
+      backgroundColor: activityColorsBg.sleep,
+      borderColor: activityColorsBorder.sleep,
+      shadowColor: activityColors.sleep,
     });
   });
 
-  it('applies correct background color for pump type', () => {
+  it('applies correct glow color for pump type', () => {
     const { getByLabelText } = render(
       <ActivityButton
         type="pump"
@@ -110,11 +116,13 @@ describe('ActivityButton', () => {
 
     const button = getByLabelText('Log Pump activity');
     expect(button.props.style).toMatchObject({
-      backgroundColor: activityColors.pump,
+      backgroundColor: activityColorsBg.pump,
+      borderColor: activityColorsBorder.pump,
+      shadowColor: activityColors.pump,
     });
   });
 
-  it('applies correct background color for growth type', () => {
+  it('applies correct glow color for growth type', () => {
     const { getByLabelText } = render(
       <ActivityButton
         type="growth"
@@ -126,7 +134,9 @@ describe('ActivityButton', () => {
 
     const button = getByLabelText('Log Growth activity');
     expect(button.props.style).toMatchObject({
-      backgroundColor: activityColors.growth,
+      backgroundColor: activityColorsBg.growth,
+      borderColor: activityColorsBorder.growth,
+      shadowColor: activityColors.growth,
     });
   });
 
