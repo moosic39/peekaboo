@@ -4,12 +4,10 @@ import {
   Text,
   StyleSheet,
   SafeAreaView,
-  ScrollView,
-  Platform,
 } from 'react-native';
+import { formatDistanceToNow } from 'date-fns';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ActivityButton } from '@/components/ActivityButton';
-import { LastActivityCard } from '@/components/LastActivityCard';
 import { QuickOptionsSheet } from '@/components/QuickOptionsSheet';
 import { useActivityStore } from '@/stores/activityStore';
 import { useFamilyStore } from '@/stores/familyStore';
@@ -17,124 +15,116 @@ import { ActivityType, ActivityDetails } from '@/types';
 import { colors } from '@/constants/colors';
 import { ACTIVITY_ICONS, ACTIVITY_LABELS } from '@/constants/activities';
 
-// Activity types in display order
 const ACTIVITY_TYPES: ActivityType[] = ['feed', 'diaper', 'sleep', 'pump', 'growth'];
 
 /**
  * HomeScreen - Main activity logging interface
  *
- * Features:
- * - 5 activity buttons in 2x3 grid
- * - Quick options sheet for logging activities
- * - Last activity cards showing recent status
- * - Empty states for activities not yet logged
+ * Full-screen flex grid of 5 activity buttons, no scroll.
+ * Each button shows the activity label and time since last log.
+ * Buttons fill the thumb zone for one-handed use.
  */
 export default function HomeScreen() {
   const [selectedType, setSelectedType] = useState<ActivityType | null>(null);
   const { activities, logActivity } = useActivityStore();
   const { currentBabyId } = useFamilyStore();
 
-  /**
-   * Compute last activities for each type, filtered to the selected baby
-   */
   const lastActivities = useMemo(() => {
     const result: Record<ActivityType, typeof activities[0] | null> = {
-      feed: null,
-      diaper: null,
-      sleep: null,
-      pump: null,
-      growth: null,
+      feed: null, diaper: null, sleep: null, pump: null, growth: null,
     };
-
     ACTIVITY_TYPES.forEach((type) => {
       const filtered = activities.filter(
         (a) => a.type === type && a.baby_id === currentBabyId
       );
       result[type] = filtered.length > 0 ? filtered[0] : null;
     });
-
     return result;
   }, [activities, currentBabyId]);
+
+  const timeAgoMap = useMemo(() => {
+    const result: Partial<Record<ActivityType, string>> = {};
+    ACTIVITY_TYPES.forEach((type) => {
+      const last = lastActivities[type];
+      if (last) {
+        result[type] = formatDistanceToNow(new Date(last.timestamp), { addSuffix: true });
+      }
+    });
+    return result;
+  }, [lastActivities]);
 
   const handleActivityPress = useCallback((type: ActivityType) => {
     setSelectedType(type);
   }, []);
 
-  const handleOptionSelect = useCallback(
-    (value: string) => {
-      if (!selectedType) return;
+  const handleOptionSelect = useCallback((value: string) => {
+    if (!selectedType) return;
+    try {
+      logActivity(selectedType, mapOptionToDetails(selectedType, value));
+    } catch (err) {
+      console.error('Failed to log activity:', err);
+    } finally {
+      setSelectedType(null);
+    }
+  }, [selectedType, logActivity]);
 
-      try {
-        const details = mapOptionToDetails(selectedType, value);
-        logActivity(selectedType, details);
-      } catch (err) {
-        console.error('Failed to log activity:', err);
-      } finally {
-        setSelectedType(null);
-      }
-    },
-    [selectedType, logActivity]
-  );
-
-  const handleSheetClose = useCallback(() => {
-    setSelectedType(null);
-  }, []);
+  const handleSheetClose = useCallback(() => setSelectedType(null), []);
 
   return (
     <GestureHandlerRootView style={styles.root}>
       <SafeAreaView style={styles.safeArea}>
-        <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.title}>Log Activity</Text>
-            <Text style={styles.subtitle}>Tap to record</Text>
+        <View style={styles.header}>
+          <Text style={styles.title}>Log Activity</Text>
+        </View>
+
+        <View style={styles.grid}>
+          <View style={styles.row}>
+            <ActivityButton
+              type="feed"
+              label={ACTIVITY_LABELS.feed}
+              icon={ACTIVITY_ICONS.feed}
+              timeAgo={timeAgoMap.feed}
+              onPress={() => handleActivityPress('feed')}
+            />
+            <ActivityButton
+              type="diaper"
+              label={ACTIVITY_LABELS.diaper}
+              icon={ACTIVITY_ICONS.diaper}
+              timeAgo={timeAgoMap.diaper}
+              onPress={() => handleActivityPress('diaper')}
+            />
           </View>
 
-          {/* Activity Buttons Grid */}
-          <View style={styles.buttonGrid}>
-            {ACTIVITY_TYPES.map((type) => (
-              <View key={type} style={styles.buttonWrapper}>
-                <ActivityButton
-                  type={type}
-                  label={ACTIVITY_LABELS[type]}
-                  icon={ACTIVITY_ICONS[type]}
-                  onPress={() => handleActivityPress(type)}
-                />
-              </View>
-            ))}
+          <View style={styles.row}>
+            <ActivityButton
+              type="sleep"
+              label={ACTIVITY_LABELS.sleep}
+              icon={ACTIVITY_ICONS.sleep}
+              timeAgo={timeAgoMap.sleep}
+              onPress={() => handleActivityPress('sleep')}
+            />
+            <ActivityButton
+              type="pump"
+              label={ACTIVITY_LABELS.pump}
+              icon={ACTIVITY_ICONS.pump}
+              timeAgo={timeAgoMap.pump}
+              onPress={() => handleActivityPress('pump')}
+            />
           </View>
 
-          {/* Recent Activities Section */}
-          <Text style={styles.sectionTitle}>Recent</Text>
-
-          {/* Last Activity Cards or Empty States */}
-          <View style={styles.cardsContainer}>
-            {ACTIVITY_TYPES.map((type) => {
-              const lastActivity = lastActivities[type];
-
-              if (lastActivity) {
-                return (
-                  <LastActivityCard
-                    key={type}
-                    type={lastActivity.type}
-                    timestamp={lastActivity.timestamp}
-                  />
-                );
-              }
-
-              return (
-                <View key={type} style={styles.emptyCard}>
-                  <Text style={styles.emptyIcon}>{ACTIVITY_ICONS[type]}</Text>
-                  <Text style={styles.emptyText}>
-                    No {ACTIVITY_LABELS[type].toLowerCase()} logged yet
-                  </Text>
-                </View>
-              );
-            })}
+          <View style={styles.lastRow}>
+            <View style={styles.halfButton}>
+              <ActivityButton
+                type="growth"
+                label={ACTIVITY_LABELS.growth}
+                icon={ACTIVITY_ICONS.growth}
+                timeAgo={timeAgoMap.growth}
+                onPress={() => handleActivityPress('growth')}
+              />
+            </View>
           </View>
-        </ScrollView>
+        </View>
 
-        {/* Quick Options Sheet */}
         <QuickOptionsSheet
           activityType={selectedType}
           visible={selectedType !== null}
@@ -146,21 +136,13 @@ export default function HomeScreen() {
   );
 }
 
-/**
- * Map option value to typed activity details
- */
 function mapOptionToDetails(type: ActivityType, value: string): ActivityDetails {
   switch (type) {
-    case 'feed':
-      return { method: value as 'breast' | 'bottle' | 'both' };
-    case 'diaper':
-      return { type: value as 'wet' | 'dirty' | 'both' };
-    case 'sleep':
-      return { status: value as 'start' | 'end' };
-    case 'pump':
-      return { side: value as 'left' | 'right' | 'both' };
-    case 'growth':
-      return { weight: 0 };
+    case 'feed': return { method: value as 'breast' | 'bottle' | 'both' };
+    case 'diaper': return { type: value as 'wet' | 'dirty' | 'both' };
+    case 'sleep': return { status: value as 'start' | 'end' };
+    case 'pump': return { side: value as 'left' | 'right' | 'both' };
+    case 'growth': return { weight: 0 };
     default:
       const _exhaustive: never = type;
       throw new Error(`Unhandled activity type: ${_exhaustive}`);
@@ -175,66 +157,34 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
-  scrollView: {
-    flex: 1,
-  },
-  content: {
-    padding: 20,
-    paddingBottom: 36,
-  },
   header: {
-    marginBottom: 28,
-    marginTop: 4,
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 16,
   },
   title: {
-    fontSize: 30,
+    fontSize: 22,
     fontWeight: '700',
     color: colors.text,
     letterSpacing: -0.5,
   },
-  subtitle: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginTop: 4,
-    letterSpacing: 0.2,
-  },
-  buttonGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginHorizontal: -6,
-    marginBottom: 36,
-  },
-  buttonWrapper: {
-    width: '50%',
-    padding: 6,
-  },
-  sectionTitle: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: colors.textSecondary,
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
-    marginBottom: 14,
-  },
-  cardsContainer: {
+  grid: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
     gap: 10,
   },
-  emptyCard: {
-    backgroundColor: colors.surface,
-    borderRadius: 14,
-    padding: 14,
+  row: {
+    flex: 1,
     flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-    gap: 12,
+    gap: 10,
   },
-  emptyIcon: {
-    fontSize: 22,
-    opacity: 0.4,
+  lastRow: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
-  emptyText: {
-    fontSize: 14,
-    color: colors.textLight,
+  halfButton: {
+    width: '50%',
   },
 });
