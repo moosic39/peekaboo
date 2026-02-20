@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -26,8 +26,15 @@ const ACTIVITY_TYPES: ActivityType[] = ['feed', 'diaper', 'sleep', 'pump', 'grow
  */
 export default function HomeScreen() {
   const [selectedType, setSelectedType] = useState<ActivityType | null>(null);
+  const [tick, setTick] = useState(0);
   const { activities, logActivity } = useActivityStore();
   const { currentBabyId } = useFamilyStore();
+
+  // Refresh time labels every minute so "2 minutes ago" doesn't go stale
+  useEffect(() => {
+    const interval = setInterval(() => setTick((t) => t + 1), 60_000);
+    return () => clearInterval(interval);
+  }, []);
 
   const lastActivities = useMemo(() => {
     const result: Record<ActivityType, typeof activities[0] | null> = {
@@ -51,7 +58,7 @@ export default function HomeScreen() {
       }
     });
     return result;
-  }, [lastActivities]);
+  }, [lastActivities, tick]);
 
   const handleActivityPress = useCallback((type: ActivityType) => {
     setSelectedType(type);
