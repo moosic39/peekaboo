@@ -54,8 +54,11 @@ export const useActivityStore = create<ActivityStore>()(
           throw new Error('No baby selected. Please select a baby first.');
         }
 
-        // Generate unique ID: timestamp + random suffix
-        const id = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        // Generate a RFC 4122 UUID v4 (required by the DB activities.id UUID column)
+        const id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+          const r = (Math.random() * 16) | 0;
+          return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+        });
 
         const activity: Activity = {
           id,

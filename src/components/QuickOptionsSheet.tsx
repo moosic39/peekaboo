@@ -1,8 +1,8 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useRef, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
 import type { BottomSheetBackdropProps } from '@gorhom/bottom-sheet';
-import { colors } from '@/constants/colors';
+import { activityColors, colors } from '@/constants/colors';
 import { ActivityType } from '@/types';
 
 interface Option {
@@ -45,8 +45,10 @@ interface QuickOptionsSheetProps {
 }
 
 /**
- * Native QuickOptionsSheet component using @gorhom/bottom-sheet
- * Displays activity-specific options in a bottom sheet modal
+ * Native QuickOptionsSheet using @gorhom/bottom-sheet v5
+ *
+ * v5 requires the sheet to be always mounted (starting at index -1),
+ * controlled via a ref rather than mount/unmount cycles.
  */
 export function QuickOptionsSheet({
   activityType,
@@ -54,9 +56,18 @@ export function QuickOptionsSheet({
   onSelectOption,
   onClose,
 }: QuickOptionsSheetProps) {
-  const snapPoints = useMemo(() => ['25%', '50%'], []);
+  const bottomSheetRef = useRef<BottomSheet>(null);
+  const snapPoints = useMemo(() => ['40%'], []);
 
-  // Render backdrop component
+  // Open/close the sheet imperatively when visibility changes
+  useEffect(() => {
+    if (visible) {
+      bottomSheetRef.current?.snapToIndex(0);
+    } else {
+      bottomSheetRef.current?.close();
+    }
+  }, [visible]);
+
   const renderBackdrop = useCallback(
     (props: BottomSheetBackdropProps) => (
       <BottomSheetBackdrop
@@ -69,53 +80,42 @@ export function QuickOptionsSheet({
     [onClose]
   );
 
-  // Handle option selection
-  const handleSelectOption = useCallback(
-    (value: string) => {
-      onSelectOption(value);
-    },
-    [onSelectOption]
-  );
-
-  // Get options for current activity type
   const options = activityType ? OPTIONS[activityType] : [];
-  const activityColor = activityType ? colors[activityType] : colors.primary;
-
-  // Bottom sheet ref is managed internally by the library when using visible prop pattern
-  const sheetIndex = visible ? 0 : -1;
-
-  if (!activityType) {
-    return null;
-  }
+  const activityColor = activityType ? activityColors[activityType] : colors.primary;
 
   return (
     <BottomSheet
-      index={sheetIndex}
+      ref={bottomSheetRef}
+      index={-1}
       snapPoints={snapPoints}
       enablePanDownToClose
       onClose={onClose}
       backdropComponent={renderBackdrop}
     >
-      <View style={styles.content}>
-        <Text style={styles.title}>
-          {activityType.charAt(0).toUpperCase() + activityType.slice(1)}
-        </Text>
-        <View style={styles.optionsContainer}>
-          {options.map((option) => (
-            <TouchableOpacity
-              key={option.value}
-              style={[styles.option, { backgroundColor: activityColor }]}
-              onPress={() => handleSelectOption(option.value)}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel={`Select ${option.label}`}
-              accessibilityHint={`Tap to select ${option.label} option`}
-            >
-              <Text style={styles.optionText}>{option.label}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
+      <BottomSheetView style={styles.content}>
+        {activityType && (
+          <>
+            <Text style={styles.title}>
+              {activityType.charAt(0).toUpperCase() + activityType.slice(1)}
+            </Text>
+            <View style={styles.optionsContainer}>
+              {options.map((option) => (
+                <TouchableOpacity
+                  key={option.value}
+                  style={[styles.option, { backgroundColor: activityColor }]}
+                  onPress={() => onSelectOption(option.value)}
+                  activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Select ${option.label}`}
+                  accessibilityHint={`Tap to select ${option.label} option`}
+                >
+                  <Text style={styles.optionText}>{option.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </>
+        )}
+      </BottomSheetView>
     </BottomSheet>
   );
 }
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
     minWidth: 100,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 56, // Large tap target
+    minHeight: 56,
   },
   optionText: {
     fontSize: 16,

@@ -12,6 +12,7 @@ import { ActivityButton } from '@/components/ActivityButton';
 import { LastActivityCard } from '@/components/LastActivityCard';
 import { QuickOptionsSheet } from '@/components/QuickOptionsSheet';
 import { useActivityStore } from '@/stores/activityStore';
+import { useFamilyStore } from '@/stores/familyStore';
 import { ActivityType, ActivityDetails } from '@/types';
 import { colors } from '@/constants/colors';
 
@@ -48,9 +49,10 @@ const ACTIVITY_ICONS: Record<ActivityType, string> = {
 export default function HomeScreen() {
   const [selectedType, setSelectedType] = useState<ActivityType | null>(null);
   const { activities, logActivity } = useActivityStore();
+  const { currentBabyId } = useFamilyStore();
 
   /**
-   * Compute last activities for each type
+   * Compute last activities for each type, filtered to the selected baby
    * Memoized to prevent re-computation on every render
    */
   const lastActivities = useMemo(() => {
@@ -63,12 +65,14 @@ export default function HomeScreen() {
     };
 
     ACTIVITY_TYPES.forEach((type) => {
-      const filtered = activities.filter((a) => a.type === type);
+      const filtered = activities.filter(
+        (a) => a.type === type && a.baby_id === currentBabyId
+      );
       result[type] = filtered.length > 0 ? filtered[0] : null;
     });
 
     return result;
-  }, [activities]);
+  }, [activities, currentBabyId]);
 
   /**
    * Handle activity button press - opens bottom sheet
@@ -85,9 +89,14 @@ export default function HomeScreen() {
     (value: string) => {
       if (!selectedType) return;
 
-      const details = mapOptionToDetails(selectedType, value);
-      logActivity(selectedType, details);
-      setSelectedType(null);
+      try {
+        const details = mapOptionToDetails(selectedType, value);
+        logActivity(selectedType, details);
+      } catch (err) {
+        console.error('Failed to log activity:', err);
+      } finally {
+        setSelectedType(null);
+      }
     },
     [selectedType, logActivity]
   );
