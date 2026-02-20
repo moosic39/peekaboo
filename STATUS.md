@@ -1,7 +1,7 @@
 # Project Status
 
-**Last Updated:** 2026-02-09
-**Current Phase:** Phase 5 - Authentication & Multi-User Features (75% Complete)
+**Last Updated:** 2026-02-20
+**Current Phase:** Phase 5 Week 4 - Integration & Polish (99% Complete) + UI Redesign Done
 
 ---
 
@@ -338,11 +338,10 @@
 
 **Remaining Work (Phase 5 Week 4):**
 
-**Task 11-12: Multi-Baby Integration**
+**Task 12: Multi-Baby Integration**
 Integrate baby selector with existing screens:
-1. Update activityStore to use familyStore.currentBabyId
-2. Add BabySelector to HomeScreen, TimelineScreen, StatsScreen
-3. Filter activities by selected baby
+1. Add BabySelector to HomeScreen, TimelineScreen, StatsScreen
+2. Filter activities by selected baby
 
 **Task 13: Testing & Polish**
 Comprehensive testing:
@@ -354,14 +353,16 @@ Comprehensive testing:
 **Task 14: Documentation**
 Final documentation updates:
 1. Update CLAUDE.md with auth patterns
-2. Add session notes for Phase 5
-3. Update deployment guide with auth setup
+2. Update deployment guide with auth setup
+
+**✅ UI Redesign (done):**
+Dark & premium theme applied across all main screens and components.
 
 ---
 
 ## 📊 Progress Tracker
 
-### Overall Progress: 97.5%
+### Overall Progress: 99%
 
 | Phase | Status | Progress |
 |-------|--------|----------|
@@ -377,6 +378,7 @@ Final documentation updates:
 | Phase 5 Week 2: Auth Screens | ✅ Complete | 100% (3/3 tasks) |
 | Phase 5 Week 3: Onboarding | ✅ Complete | 100% (3/3 tasks) |
 | Phase 5 Week 4: Integration | 🚧 In Progress | 25% (1/4 tasks) |
+| UI Redesign: Dark & Premium Theme | ✅ Complete | 100% |
 | Web Deployment | ⚠️ Config Ready | 50% |
 | Mobile Deployment | ⚠️ Config Ready | 50% |
 
@@ -741,6 +743,53 @@ Session 12 (2026-02-13):
   * No refetch needed when switching babies
 - Documentation updated in CLAUDE.md
 Next: Task 12 - Add BabySelector to main screens
+
+Session 14 (2026-02-20):
+- Completed: Dark & Premium UI redesign across all main screens
+- New design system:
+  * Background: deep navy #0D0D1A
+  * Glass morphism cards: rgba(255,255,255,0.07) bg + rgba(255,255,255,0.12) border
+  * Activity colors brightened for dark bg (sky blue, golden amber, lilac, blush pink, mint)
+  * New activityColorsBg (12% tint) and activityColorsBorder (35%) color maps in colors.ts
+- Component changes:
+  * ActivityButton: glass card with color-matched glow border/shadow halo (no solid fill)
+  * LastActivityCard: glass card with glowing icon circle + accent dot indicator
+  * TimelineItem: glass card with glowing icon, updated separator to ·
+- Screen changes:
+  * HomeScreen: dark bg, refined header with subtitle, uppercase "Recent" section label
+  * TimelineScreen: dark bg, subtitle, date header with extending divider line
+  * StatsScreen: glass stat cards, accent-colored count value top-right, icon top-left
+  * App.tsx: dark tab bar (#0D0D1A), light status bar
+- Tests updated to reflect new color system (bg tint + border + shadow glow)
+- All 205 relevant tests passing (16 pre-existing failures unrelated to UI)
+
+Session 13 (2026-02-20):
+- Fixed Supabase database — tables were missing, applied full V2 schema via MCP
+- Fixed RLS/permissions issues blocking family and activity creation:
+  * Added GRANT statements (SQL migrations via SQL don't auto-grant like Dashboard does)
+  * Fixed chicken-and-egg RLS problem on family creation: INSERT + .select() failed
+    because SELECT policy checks user_is_in_family() before user is in family_members
+  * Created create_family_with_admin() SECURITY DEFINER RPC to atomically create
+    family and add creator as admin in one transaction
+  * Updated sync.ts createFamily() to use the RPC instead of direct insert
+  * Fixed createBaby() column name bug: birthdate → birth_date
+- Cleaned up SQL files: consolidated 6 files into single database-reset.sql
+  (removed: database-schema.sql, database-schema-v2.sql, fix-rls-policies.sql,
+   fix-missing-rls-policies.sql, reset-database.sql)
+- Fixed activity logging on HomeScreen:
+  * Activity IDs now generate valid UUID v4 (was timestamp-random string, DB rejected)
+  * Rewrote QuickOptionsSheet.tsx for @gorhom/bottom-sheet v5 correct pattern:
+    always-mounted sheet starting at index=-1, ref-controlled open/close,
+    BottomSheetView as content container (plain View broke touch events in v5)
+  * Added try/catch/finally in handleOptionSelect so sheet always closes
+  * lastActivities now filters by currentBabyId (was showing all babies mixed)
+- Configured Claude Code status line with colors (directory, git branch, model, ctx%)
+
+Key fixes this session:
+- App is now fully functional end-to-end: auth → onboarding → activity logging
+- Database properly set up with all tables, RLS, grants, triggers, and RPC
+- All Supabase sync operations working correctly
+
 ```
 
 ---

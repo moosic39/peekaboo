@@ -88,20 +88,20 @@ Follow the phases outlined in `specs/implementation-plan-v1.md` and tracked in `
 
 ### Current Project State
 
-**Project Status: Phase 5 Week 3 Complete (97.5% Complete)**
+**Project Status: Phase 5 Week 4 In Progress (99% Complete)**
 
 ✅ **Completed:**
 - Phase 1: Project Setup (100%)
 - Phase 2: Core UI Components (100%)
-- Supabase Backend: Deployed with V2 schema (100%)
+- Supabase Backend: Deployed with V2 schema, grants, and RPC (100%)
 - Phase 3: Home Screen Implementation (100%)
 - Phase 4: Timeline, Stats & Navigation (100%)
 - Phase 5 Week 1: Foundation & Auth Store (100%)
 - Phase 5 Week 2: Auth Screens & Navigation (100%)
 - Phase 5 Week 3: Onboarding & Settings (100%)
+- Activity logging end-to-end (fixed UUID, QuickOptionsSheet v5, RLS) (100%)
 
 🎯 **Current Focus:** Phase 5 Week 4 - Integration & Polish
-- Next: Update activityStore for multi-baby support
 - Next: Add BabySelector to main screens (Home, Timeline, Stats)
 - Next: Integration testing and documentation
 
@@ -113,8 +113,9 @@ cat STATUS.md | grep "Next Steps"  # See what's next
 ```
 
 **Environment:**
-- Supabase: ✅ Deployed (V2 schema with RLS fix)
+- Supabase: ✅ Deployed (V2 schema, RLS, grants, RPC)
 - Database: 5 tables (families, babies, family_members, activities, growth_measurements)
+- RPC: create_family_with_admin() for atomic family creation
 - Real-time: ✅ Enabled for activities and growth_measurements
 - Connection: ✅ Tested and verified
 
@@ -430,12 +431,25 @@ plugins: ['react-native-reanimated/plugin']
 ```
 
 ### Color System
-Activity-specific colors defined in `src/constants/colors.ts`:
-- feed: Blue (#4A90D9)
-- diaper: Yellow (#F5C842)
-- sleep: Purple (#9B6BC2)
-- pump: Pink (#E891B0)
-- growth: Green (#5CB85C)
+Dark & premium theme defined in `src/constants/colors.ts`:
+
+**App background/surface:**
+- background: `#0D0D1A` (deep navy-black)
+- surface: `rgba(255,255,255,0.07)` (glass card background)
+- surfaceBorder: `rgba(255,255,255,0.12)` (glass card border)
+- text: `#F2F2F7`, textSecondary: `rgba(242,242,247,0.55)`
+
+**Activity accent colors** (brightened for dark background):
+- feed: `#5BA8F5` (sky blue)
+- diaper: `#FFD166` (golden amber)
+- sleep: `#B08CE8` (soft lilac)
+- pump: `#F0A3C8` (blush pink)
+- growth: `#6DD16D` (mint green)
+
+**Activity color variants** (for glass UI elements):
+- `activityColorsBg[type]` — 12% opacity tint (button/card background)
+- `activityColorsBorder[type]` — 35% opacity (button/card border)
+- `activityColors[type]` — full color used as `shadowColor` for glow effect
 
 ### Navigation
 Bottom tab navigation with emoji icons. Tabs: Home (🏠), Timeline (📋), Stats (📊)
