@@ -155,4 +155,29 @@ describe('ActivityButton', () => {
     expect(button.props.accessibilityHint).toBe('Tap to record a Feeding activity');
     expect(getByRole('button')).toBeTruthy();
   });
+
+  it('renders timeAgo when provided', () => {
+    const { getByText } = render(
+      <ActivityButton
+        type="feed"
+        onPress={mockOnPress}
+        label="Feed"
+        icon="🍼"
+        timeAgo="2 hours ago"
+      />
+    );
+    expect(getByText('2 hours ago')).toBeTruthy();
+  });
+
+  it('renders — when timeAgo is not provided', () => {
+    const { getByText } = render(
+      <ActivityButton
+        type="feed"
+        onPress={mockOnPress}
+        label="Feed"
+        icon="🍼"
+      />
+    );
+    expect(getByText('—')).toBeTruthy();
+  });
 });

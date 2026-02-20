@@ -8,17 +8,20 @@ export interface ActivityButtonProps {
   onPress: () => void;
   label: string;
   icon: string;
+  timeAgo?: string;
 }
 
 /**
- * Large, tappable button for logging activities
- * Dark glass design with color-matched glow border
+ * Large, tappable button for logging activities.
+ * Shows icon, label, and time since last log.
+ * Uses flex: 1 to fill its parent container.
  */
 export const ActivityButton: React.FC<ActivityButtonProps> = ({
   type,
   onPress,
   label,
   icon,
+  timeAgo,
 }) => {
   const glowColor = activityColors[type];
   const bgColor = activityColorsBg[type];
@@ -43,6 +46,7 @@ export const ActivityButton: React.FC<ActivityButtonProps> = ({
       <View style={styles.content}>
         <Text style={styles.icon}>{icon}</Text>
         <Text style={styles.label}>{label}</Text>
+        <Text style={styles.timeAgo}>{timeAgo ?? '—'}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -50,9 +54,9 @@ export const ActivityButton: React.FC<ActivityButtonProps> = ({
 
 const styles = StyleSheet.create({
   button: {
+    flex: 1,
     borderRadius: 20,
     padding: 20,
-    minHeight: 110,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
@@ -75,5 +79,11 @@ const styles = StyleSheet.create({
     color: '#F2F2F7',
     textAlign: 'center',
     letterSpacing: 0.3,
+  },
+  timeAgo: {
+    fontSize: 12,
+    color: 'rgba(242, 242, 247, 0.55)',
+    marginTop: 4,
+    textAlign: 'center',
   },
 });
