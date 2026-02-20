@@ -426,30 +426,16 @@ export const createFamily = async (name: string): Promise<Family | null> => {
     // Generate 6-character uppercase invite code
     const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
 
-    // Create family
+    // Create family and add user as admin atomically via RPC.
+    // Direct insert + .select() fails because the SELECT policy requires the user
+    // to already be in family_members — a chicken-and-egg problem.
     const { data: family, error: familyError } = await supabase
-      .from('families')
-      .insert({ name, invite_code: inviteCode })
-      .select()
+      .rpc('create_family_with_admin', { p_name: name, p_invite_code: inviteCode })
       .single();
 
     if (familyError || !family) {
       console.error('Error creating family:', familyError);
       return null;
-    }
-
-    // Add current user as admin
-    const { error: memberError } = await supabase
-      .from('family_members')
-      .insert({
-        family_id: family.id,
-        user_id: userId,
-        role: 'admin',
-      });
-
-    if (memberError) {
-      console.error('Error adding user to family:', memberError);
-      // Family was created but membership failed - still return the family
     }
 
     return family as Family;
@@ -476,7 +462,7 @@ export const createBaby = async (
       .insert({
         family_id: familyId,
         name,
-        birthdate,
+        birth_date: birthdate,
         gender,
       })
       .select()

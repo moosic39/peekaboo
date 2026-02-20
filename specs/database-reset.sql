@@ -489,12 +489,57 @@ ALTER PUBLICATION supabase_realtime ADD TABLE activities;
 ALTER PUBLICATION supabase_realtime ADD TABLE growth_measurements;
 
 -- ====================================================================
--- COMPLETION MESSAGE
+-- ROLE GRANTS
+-- (Required when creating tables via SQL — Dashboard does this automatically)
 -- ====================================================================
 
-SELECT '✅ Database reset complete!' AS status;
-SELECT '✅ V2 schema installed successfully!' AS result;
-SELECT 'Tables: families, babies, family_members, activities, growth_measurements' AS tables_created;
-SELECT 'Views: daily_activity_summary, growth_trends, feeding_stats, sleep_stats' AS views_created;
-SELECT 'RLS: All tables secured with Row Level Security policies' AS security;
-SELECT 'Realtime: Enabled for activities and growth_measurements' AS realtime;
+GRANT USAGE ON SCHEMA public TO anon, authenticated;
+
+-- Full access for authenticated users (still enforced by RLS policies above)
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE families TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE babies TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE family_members TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE activities TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE growth_measurements TO authenticated;
+
+-- Read-only for anon (needed for invite code lookup when joining a family)
+GRANT SELECT ON TABLE families TO anon;
+
+-- Analytics views
+GRANT SELECT ON daily_activity_summary TO authenticated;
+GRANT SELECT ON growth_trends TO authenticated;
+GRANT SELECT ON feeding_stats TO authenticated;
+GRANT SELECT ON sleep_stats TO authenticated;
+
+-- ====================================================================
+-- RPC FUNCTIONS
+-- ====================================================================
+
+-- Creates a family and immediately adds the caller as admin in one transaction.
+-- Needed because a direct INSERT + .select() fails: the SELECT policy checks
+-- user_is_in_family(), but the user isn't in family_members yet at that point.
+CREATE OR REPLACE FUNCTION create_family_with_admin(p_name TEXT, p_invite_code TEXT)
+RETURNS SETOF families
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  new_family families;
+BEGIN
+  IF auth.uid() IS NULL THEN
+    RAISE EXCEPTION 'Not authenticated';
+  END IF;
+
+  INSERT INTO families (name, invite_code)
+  VALUES (p_name, p_invite_code)
+  RETURNING * INTO new_family;
+
+  INSERT INTO family_members (family_id, user_id, role)
+  VALUES (new_family.id, auth.uid(), 'admin');
+
+  RETURN NEXT new_family;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION create_family_with_admin(TEXT, TEXT) TO authenticated;
