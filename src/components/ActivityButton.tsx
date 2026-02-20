@@ -1,7 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
 import { ActivityType } from '@/types';
-import { activityColors, activityColorsBg, activityColorsBorder } from '@/constants/colors';
+import { activityColors, activityColorsBg, activityColorsBorder, colors } from '@/constants/colors';
 
 export interface ActivityButtonProps {
   type: ActivityType;
@@ -76,13 +76,13 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#F2F2F7',
+    color: colors.text,
     textAlign: 'center',
     letterSpacing: 0.3,
   },
   timeAgo: {
     fontSize: 12,
-    color: 'rgba(242, 242, 247, 0.55)',
+    color: colors.textSecondary,
     marginTop: 4,
     textAlign: 'center',
   },

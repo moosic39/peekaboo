@@ -119,6 +119,8 @@ export default function HomeScreen() {
             />
           </View>
 
+          {/* Growth is centered at half-width: the wrapper constrains width,
+              lastRow's flex:1 gives it equal height with the other rows */}
           <View style={styles.lastRow}>
             <View style={styles.halfButton}>
               <ActivityButton
